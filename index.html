@@ -68,99 +68,12 @@ input[type=text]{font-family:inherit;font-size:28px;padding:10px 14px;border-rad
 <body>
 <div id="deco"></div>
 <div id="app"></div>
+<script src="content.js"></script>
 <script>
 /* =============================================================
    SETTINGS (edit these)
    ============================================================= */
-const CONFIG = { parentPin: "1234", questionsPerRound: 10, soundsPerRound: 8, dailyBonus: 30, allChaptersBonus: 50 };
-
-/* =============================================================
-   CHAPTER 1: MISSING LETTERS (sight words). 8 levels, 1 to 3 missing letters.
-   Common high-frequency words. Please check against your school's list.
-   ============================================================= */
-const WORD_LEVELS = [
-  {name:"Year 1: starter words", blanks:1, words:["was","said","they","have","come","some","were","what","when","from","your","here"]},
-  {name:"Year 1: more words", blanks:1, words:["there","where","would","could","about","their","little","people","again","going","over","into"]},
-  {name:"Year 1: tricky words", blanks:1, words:["friend","school","every","because","after","just","want","who","how","put","does","are"]},
-  {name:"Year 1: two missing", blanks:2, words:["they","what","where","there","would","could","because","friend","school","people","little","again"]},
-  {name:"Year 2: first words", blanks:2, words:["always","another","before","first","great","many","other","should","these","those","water","which"]},
-  {name:"Year 2: more words", blanks:2, words:["world","very","across","together","found","around","children","house","only","right","through","brother"]},
-  {name:"Year 2: tricky words", blanks:2, words:["thought","enough","mother","whole","laugh","though","because","friend","people","always","another","together"]},
-  {name:"Challenge: three missing", blanks:3, words:["beautiful","believe","favourite","different","tomorrow","library","everyone","someone","together","children","through","thought"]}
-];
-
-/* =============================================================
-   CHAPTER 2: SAY THE SOUNDS (Jolly Phonics order). [sound, picture word, picture]
-   ============================================================= */
-const SOUND_GROUPS = {
-  1: [["s","sun","☀️"],["a","ant","🐜"],["t","tap","🚰"],["i","insect","🐛"],["p","pig","🐷"],["n","net","🥅"]],
-  2: [["c","cat","🐱"],["k","kite","🪁"],["e","egg","🥚"],["h","hat","🎩"],["r","rat","🐀"],["m","moon","🌙"],["d","dog","🐶"]],
-  3: [["g","goat","🐐"],["o","orange","🍊"],["u","umbrella","☂️"],["l","leg","🦵"],["f","fish","🐟"],["b","ball","⚽"]],
-  4: [["ai","rain","🌧️"],["j","jam","🍓"],["oa","boat","⛵"],["ie","pie","🥧"],["ee","bee","🐝"],["or","fork","🍴"]],
-  5: [["z","zebra","🦓"],["w","web","🕸️"],["ng","ring","💍"],["v","van","🚐"],["oo","book","📖"],["oo","spoon","🥄"]],
-  6: [["y","yellow","💛"],["x","box","📦"],["ch","chip","🍟"],["sh","ship","🚢"],["th","thumb","👍"]],
-  7: [["qu","queen","👸"],["ou","cloud","☁️"],["oi","coin","🪙"],["ue","blue","🔵"],["er","fern","🌿"],["ar","car","🚗"]]
-};
-
-/* =============================================================
-   CHAPTER 3: DIGRAPH LESSONS. Each digraph and ALL the sounds it can make.
-   sound: {say, key, keyPic, words:[[word, picture or ""]]}
-   ============================================================= */
-const LESSONS = [
-  {dg:"oo", intro:"The letters oo can make two different sounds.", sounds:[
-    {say:"long oo", key:"moon", keyPic:"🌙", words:[["moon","🌙"],["spoon","🥄"],["zoo","🦁"],["food","🍲"],["boot","🥾"],["cool","😎"]]},
-    {say:"short oo", key:"book", keyPic:"📖", words:[["book","📖"],["foot","🦶"],["look","👀"],["cook","🍳"],["wood","🪵"],["good","👍"]]}]},
-  {dg:"ea", intro:"The letters ea can make three different sounds!", sounds:[
-    {say:"long ee", key:"leaf", keyPic:"🍃", words:[["leaf","🍃"],["beach","🏖️"],["team",""],["seal","🦭"],["clean","🧹"],["eat","🍽️"]]},
-    {say:"short e", key:"bread", keyPic:"🍞", words:[["bread","🍞"],["head",""],["feather","🪶"],["heavy",""],["ready",""]]},
-    {say:"long a", key:"great", keyPic:"🌟", words:[["great","🌟"],["break",""],["steak","🥩"]]}]},
-  {dg:"ow", intro:"The letters ow can say 'oh' or 'ow'.", sounds:[
-    {say:"long o (oh)", key:"snow", keyPic:"❄️", words:[["snow","❄️"],["grow","🌱"],["yellow","💛"],["window","🪟"],["show",""],["blow",""]]},
-    {say:"ow (as in cow)", key:"cow", keyPic:"🐄", words:[["cow","🐄"],["down",""],["brown","🟤"],["owl","🦉"],["clown","🤡"],["crown","👑"]]}]},
-  {dg:"th", intro:"The letters th can be soft or buzzy.", sounds:[
-    {say:"soft th (no buzz)", key:"thumb", keyPic:"👍", words:[["thumb","👍"],["bath","🛁"],["three","3️⃣"],["thin",""],["think","🤔"],["moth","🦋"]]},
-    {say:"buzzy th (voice on)", key:"this", keyPic:"👉", words:[["this","👉"],["that",""],["then",""],["the",""],["mother","👩‍👧"],["brother","👦"]]}]},
-  {dg:"ou", intro:"The letters ou can make three sounds.", sounds:[
-    {say:"ow (as in house)", key:"house", keyPic:"🏠", words:[["house","🏠"],["mouse","🐭"],["cloud","☁️"],["round","⚪"],["found",""],["out",""]]},
-    {say:"long oo (as in soup)", key:"soup", keyPic:"🍲", words:[["soup","🍲"],["group","👥"],["you",""]]},
-    {say:"short u (as in young)", key:"young", keyPic:"👶", words:[["young","👶"],["touch",""],["cousin",""]]}]},
-  {dg:"ch", intro:"The letters ch can make three sounds.", sounds:[
-    {say:"ch (as in chip)", key:"chip", keyPic:"🍟", words:[["chip","🍟"],["cheese","🧀"],["chair","🪑"],["lunch","🥪"],["bench",""],["chin",""]]},
-    {say:"k (as in school)", key:"school", keyPic:"🏫", words:[["school","🏫"],["Christmas","🎄"],["stomach",""],["echo",""]]},
-    {say:"sh (as in chef)", key:"chef", keyPic:"👨‍🍳", words:[["chef","👨‍🍳"],["machine",""],["chute","🛝"]]}]},
-  {dg:"ie", intro:"The letters ie can make three sounds.", sounds:[
-    {say:"long i (as in pie)", key:"pie", keyPic:"🥧", words:[["pie","🥧"],["tie","👔"],["lie",""],["cried",""]]},
-    {say:"long ee (as in field)", key:"field", keyPic:"🌾", words:[["field","🌾"],["thief",""],["chief",""],["niece",""]]},
-    {say:"short e (as in friend)", key:"friend", keyPic:"🧑‍🤝‍🧑", words:[["friend","🧑‍🤝‍🧑"]]}]},
-  {dg:"ey", intro:"The letters ey can say 'ee' or 'ay'.", sounds:[
-    {say:"long ee (as in key)", key:"key", keyPic:"🔑", words:[["key","🔑"],["monkey","🐵"],["donkey","🫏"],["turkey","🦃"],["valley",""]]},
-    {say:"long a (as in they)", key:"they", keyPic:"👫", words:[["they","👫"],["grey","🩶"],["obey",""],["prey",""]]}]},
-  {dg:"ough", intro:"The letters ough are tricky! They make lots of sounds.", sounds:[
-    {say:"oh (as in though)", key:"though", keyPic:"🤷", words:[["though",""],["dough","🥟"],["although",""]]},
-    {say:"or (as in thought)", key:"thought", keyPic:"💭", words:[["thought","💭"],["bought","🛍️"],["brought",""],["fought",""]]},
-    {say:"uff (as in enough)", key:"enough", keyPic:"✋", words:[["enough","✋"],["rough",""],["tough","💪"]]},
-    {say:"oo (as in through)", key:"through", keyPic:"🚇", words:[["through","🚇"]]}]}
-];
-
-/* =============================================================
-   CHAPTER 4: PICTURE QUEST. See the picture, say it, spell it.
-   ============================================================= */
-const PICTURE_LEVELS = [
-  {name:"Short words", items:[["cat","🐱"],["dog","🐶"],["sun","☀️"],["pig","🐷"],["hat","🎩"],["bus","🚌"],["cup","☕"],["bed","🛏️"],["fox","🦊"],["bug","🐛"],["net","🥅"],["pen","🖊️"]]},
-  {name:"Blends", items:[["frog","🐸"],["drum","🥁"],["flag","🚩"],["crab","🦀"],["clock","🕐"],["snail","🐌"],["plant","🌱"],["tree","🌳"],["bread","🍞"],["glove","🧤"],["tent","⛺"],["swan","🦢"]]},
-  {name:"Digraph words", items:[["ship","🚢"],["fish","🐟"],["chip","🍟"],["duck","🦆"],["moon","🌙"],["boat","⛵"],["rain","🌧️"],["shell","🐚"],["sheep","🐑"],["leaf","🍃"],["coin","🪙"],["fork","🍴"]]},
-  {name:"Longer words", items:[["flower","🌸"],["house","🏠"],["spoon","🥄"],["phone","📱"],["whale","🐳"],["turtle","🐢"],["light","💡"],["bridge","🌉"],["witch","🧙"],["rabbit","🐰"],["monkey","🐵"],["spider","🕷️"]]},
-  {name:"Big words", items:[["giraffe","🦒"],["elephant","🐘"],["butterfly","🦋"],["umbrella","☂️"],["rainbow","🌈"],["dinosaur","🦕"],["volcano","🌋"],["octopus","🐙"],["strawberry","🍓"],["kangaroo","🦘"],["crocodile","🐊"],["sandwich","🥪"]]}
-];
-
-/* =============================================================
-   CHAPTER 5: DIGRAPH DETECTIVE (pick the missing digraph). [digraph, word, picture]
-   ============================================================= */
-const DETECTIVE = [
-  {name:"sh ch th wh ck ng ph", items:[["sh","ship","🚢"],["sh","fish","🐟"],["sh","shell","🐚"],["ch","chip","🍟"],["ch","chick","🐥"],["ch","cheese","🧀"],["th","thumb","👍"],["th","bath","🛁"],["wh","whale","🐳"],["wh","wheel","🛞"],["ck","duck","🦆"],["ck","sock","🧦"],["ck","clock","🕐"],["ng","ring","💍"],["ph","phone","📱"]]},
-  {name:"ai ee ea oa oo ay ow ou oi oy", items:[["ai","rain","🌧️"],["ai","snail","🐌"],["ee","tree","🌳"],["ee","sheep","🐑"],["ea","leaf","🍃"],["ea","beach","🏖️"],["oa","boat","⛵"],["oa","goat","🐐"],["oo","moon","🌙"],["oo","spoon","🥄"],["ay","tray","🍽️"],["ow","cow","🐄"],["ow","snow","❄️"],["ou","house","🏠"],["ou","mouse","🐭"],["oi","coin","🪙"],["oy","toy","🧸"]]},
-  {name:"ar or er ir ur ie igh ue tch dge", items:[["ar","car","🚗"],["ar","star","⭐"],["or","fork","🍴"],["or","horse","🐴"],["er","fern","🌿"],["er","flower","🌸"],["ir","bird","🐦"],["ur","turtle","🐢"],["ie","pie","🥧"],["igh","light","💡"],["ue","blue","🔵"],["tch","witch","🧙"],["dge","bridge","🌉"]]}
-];
+const CONFIG = { parentPin: "272905", questionsPerRound: 10, soundsPerRound: 8, dailyBonus: 30, allChaptersBonus: 50 };
 
 /* =============================================================
    CHAPTER INFO
@@ -453,6 +366,7 @@ function ensure(p){
   p.streak = p.streak || {last:"", n:0};
   p.points = p.points || 0;
   p.micMode = p.micMode || "grownup";
+  p.created = p.created || new Date().toLocaleDateString("en-CA");
 }
 const P = () => DB.profiles.find(p=>p.id===DB.current);
 function newProfile(name, avatar){
@@ -463,6 +377,18 @@ function stat(key){ const p=P(); return p.stats[key] || (p.stats[key] = {ok:0, m
 const isWeak = key => { const s = P().stats[key]; return s && s.miss > s.ok; };
 const todayStr = () => new Date().toLocaleDateString("en-CA");
 const yesterdayStr = () => new Date(Date.now()-864e5).toLocaleDateString("en-CA");
+const addDaysStr = n => new Date(Date.now()+n*864e5).toLocaleDateString("en-CA");
+const daysBetween = (a,b) => Math.floor((new Date(b)-new Date(a))/864e5);
+function needBackup(p){
+  const base = p.lastBackup || p.created || todayStr();
+  const played = p.points>0 || Object.values(p.done).some(d=>Object.keys(d).length);
+  return played && daysBetween(base, todayStr()) >= 7 && todayStr() > (p.snoozeUntil||"");
+}
+function downloadBackup(){
+  const p = P(); p.lastBackup = todayStr(); saveDB();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:"application/json"}));
+  a.download = "phonics-quest-backup-"+todayStr()+".json"; a.click();
+}
 function dailyNow(p){ return p.daily.date===todayStr() ? p.daily : {date:todayStr(), chapters:[], count:0}; }
 
 /* =============================================================
@@ -619,6 +545,7 @@ function home(){
   const streak = (p.streak.last===todayStr() || p.streak.last===yesterdayStr()) ? p.streak.n : 0;
   const nextItem = ITEMS.filter(i=>!p.owned.includes(i.id) && i.cost>0).sort((a,b)=>a.cost-b.cost)[0];
   view(`
+    ${needBackup(p)?`<div class="card" style="background:#fff8d6"><b>💾 Time to save a backup of ${esc(p.name)}'s progress!</b> It only takes a moment.<div><button class="ok small" id="bk">Back up now</button><button class="small ghost" id="bklater">Remind me in 2 days</button></div></div>`:""}
     <div class="card">
       <div id="av" style="cursor:pointer">${avatarSVG(p,270,moodNow)}</div>
       <h1>Hi ${esc(p.name)}!</h1>
@@ -642,6 +569,8 @@ function home(){
     $$("[data-play]").forEach(b=>b.onclick=()=>RUN[b.dataset.play](todayLevel(p,b.dataset.play)));
     $$("[data-menu]").forEach(b=>b.onclick=()=>MENU[b.dataset.menu]());
     $("#switch").onclick = profilesScreen; $("#grown").onclick = grownUp;
+    const bk = $("#bk"); if(bk) bk.onclick = ()=>{ if(askPin("Grown-up PIN to save a backup:")){ downloadBackup(); home(); } };
+    const bl = $("#bklater"); if(bl) bl.onclick = ()=>{ p.snoozeUntil = addDaysStr(2); saveDB(); home(); };
   });
 }
 
@@ -961,6 +890,7 @@ RUN.c2 = group=>{
 /* =============================================================
    CHAPTER 3: DIGRAPH LESSONS (meet, sort by sound, spell)
    ============================================================= */
+const hlWord = (L,w)=>{ const i = L.atEnd ? w.lastIndexOf(L.dg) : w.indexOf(L.dg); return i<0 ? w : w.slice(0,i)+`<span class="hl">${L.dg}</span>`+w.slice(i+L.dg.length); };
 MENU.c3 = ()=>levelMenu("c3", LESSONS.map(l=>`“${l.dg}” · ${l.sounds.length} sounds`));
 RUN.c3 = level=>{
   const L = LESSONS[level-1];
@@ -980,7 +910,7 @@ RUN.c3 = level=>{
   function meet(){
     view(`<div class="card"><h2>📗 Lesson ${level}: “${L.dg}”</h2><p style="font-size:22px">${L.intro}</p>
       ${L.sounds.map((s,si)=>`<div class="item" style="margin:10px 0"><div style="font-size:24px"><b class="hl">${L.dg}</b> says <b>${s.say}</b> <span style="font-size:34px">${s.keyPic}</span></div>
-        <div>${s.words.map(([w,e])=>`<button class="ghost wordbtn" data-w="${w}">${e} ${w.replace(L.dg,`<span class="hl">${L.dg}</span>`)}</button>`).join("")}</div></div>`).join("")}
+        <div>${s.words.map(([w,e])=>`<button class="ghost wordbtn" data-w="${w}">${e} ${hlWord(L,w)}</button>`).join("")}</div></div>`).join("")}
       <p style="font-size:18px">Tap a word to hear it!</p>
       <button class="ok" id="go">I'm ready ▶</button></div>`, ()=>{
         $$("[data-w]").forEach(b=>b.onclick=()=>speak(b.dataset.w));
@@ -996,7 +926,7 @@ RUN.c3 = level=>{
         view(`<div class="card"><h2>Which sound? ${i+1}/${sortQs.length}</h2>
           <div class="bar"><div style="width:${i/sortQs.length*100}%"></div></div>
           ${x.e?`<div class="big">${x.e}</div>`:""}
-          <div class="giant" style="font-size:64px;color:#33265a;margin:6px">${x.w.replace(L.dg,`<span class="hl">${L.dg}</span>`)}</div>
+          <div class="giant" style="font-size:64px;color:#33265a;margin:6px">${hlWord(L,x.w)}</div>
           <button id="say">🔊 Hear the word</button>
           <p style="font-size:20px;margin:6px">What sound does <b class="hl">${L.dg}</b> make here?</p>
           <div class="msg ${cls||""}">${msg||""}</div>
@@ -1074,7 +1004,7 @@ RUN.c5 = level=>{
     function draw(msg, cls){
       view(`<div class="card"><h2>Find the digraph ${i+1}/${qs.length}</h2>
         <div class="bar"><div style="width:${i/qs.length*100}%"></div></div>
-        <div class="big">${emoji}</div>
+        <div class="big">${emoji||"🔊"}</div>
         <div class="letters" style="margin:6px 0">${word.slice(0,at).split("").map(c=>`<div class="lt">${c}</div>`).join("")}<div class="lt ${done?"good":"blank"}" style="min-width:${done?64:90}px;width:auto;padding:0 10px">${done?dg:"?"}</div>${word.slice(at+dg.length).split("").map(c=>`<div class="lt">${c}</div>`).join("")}</div>
         <button id="say">🔊 Hear the word</button>
         <div class="msg ${cls||""}">${msg||""}</div>
@@ -1103,22 +1033,21 @@ RUN.c5 = level=>{
 /* =============================================================
    GROWN-UP CORNER
    ============================================================= */
-function grownUp(){
-  if(!askPin()) return;
+function grownUp(){ if(!askPin()) return; showGrownUp(); }
+function showGrownUp(){
   const p = P();
   const rows = Object.entries(p.stats).map(([k,v])=>({k, ...v})).filter(r=>r.miss>0).sort((a,b)=>b.miss-a.miss);
   const label = k => /^[wdpx]:/.test(k) ? k.slice(2) : "sound “"+k.split(":")[1]+"” ("+k.split(":")[2]+")";
-  const backup = JSON.stringify(DB);
-  view(`<div class="card" style="text-align:left"><h2>👩‍👧 Grown-up corner: ${esc(p.name)}</h2>
+    view(`<div class="card" style="text-align:left"><h2>👩‍👧 Grown-up corner: ${esc(p.name)}</h2>
     <h3>Levels reached</h3><p style="font-size:18px">${CHS.map(ch=>`${CH[ch].icon} ${CH[ch].name}: level ${todayLevel(p,ch)} of ${CH[ch].max}`).join("<br>")}</p>
     <h3>Needs more practice</h3>
     <p style="font-size:18px">${rows.length ? rows.map(r=>`<b>${esc(label(r.k))}</b> (missed ${r.miss}, right ${r.ok})`).join(" · ") : "Nothing yet!"}</p>
-    <h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
+    <h3>Backup</h3><p style="font-size:18px">Last backup: <b>${p.lastBackup||"never"}</b>. The home screen reminds you each week.</p><h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
     <div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
     <input type="file" id="file" accept=".json" style="display:none">
     <button class="small alt" id="del">Delete this player</button></div>`, ()=>{
       $("#del").onclick = ()=>{ if(confirm("Delete "+p.name+" and all their progress?")){ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); } };
-      $("#exp").onclick = ()=>{ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([backup],{type:"application/json"})); a.download = "phonics-quest-backup-"+todayStr()+".json"; a.click(); };
+      $("#exp").onclick = ()=>{ downloadBackup(); showGrownUp(); };
       $("#imp").onclick = ()=>$("#file").click();
       $("#file").onchange = e=>{
         const f = e.target.files[0]; if(!f) return;
