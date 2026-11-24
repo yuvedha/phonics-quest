@@ -73,7 +73,7 @@ input[type=text]{font-family:inherit;font-size:28px;padding:10px 14px;border-rad
 /* =============================================================
    SETTINGS (edit these)
    ============================================================= */
-const CONFIG = { parentPin: "272905", questionsPerRound: 10, soundsPerRound: 8, dailyBonus: 30, allChaptersBonus: 50 };
+const CONFIG = { parentPinHash: "e09d8017c5e1b84c2ba9de609c9355bc568f8f90ea2ad549212b127763797c9c", questionsPerRound: 10, soundsPerRound: 8, dailyBonus: 30, allChaptersBonus: 50 };
 
 /* =============================================================
    CHAPTER INFO
@@ -481,7 +481,16 @@ function view(inner, bind, opts={}){
   const hb = $("#homeBtn"); if(hb) hb.onclick = home;
   if(bind) bind();
 }
-function askPin(msg){ const v = prompt(msg || "Grown-up PIN:"); return v === CONFIG.parentPin; }
+// PIN is stored only as a salted, repeated SHA-256 hash (no plain text). To change it: run pinHash("newpin") in the browser console and paste the result into CONFIG.parentPinHash.
+function sha256(s){const K=[];let p=2;while(K.length<64){let ok=1;for(let i=2;i*i<=p;i++)if(p%i==0){ok=0;break}if(ok)K.push((Math.cbrt(p)%1*4294967296)|0);p++}
+let H=[];p=2;while(H.length<8){let ok=1;for(let i=2;i*i<=p;i++)if(p%i==0){ok=0;break}if(ok)H.push((Math.sqrt(p)%1*4294967296)|0);p++}
+const b=unescape(encodeURIComponent(s)),l=b.length,w=[];for(let i=0;i<(((l*8+64>>9)<<4)+16);i++)w[i]=0;for(let i=0;i<l;i++)w[i>>2]|=b.charCodeAt(i)<<(24-(i%4)*8);w[l>>2]|=128<<(24-(l%4)*8);w[((l*8+64>>9)<<4)+15]=l*8;
+for(let o=0;o<w.length;o+=16){const x=w.slice(o,o+16);for(let i=16;i<64;i++){const a=x[i-15],c=x[i-2];x[i]=(x[i-16]+((a>>>7|a<<25)^(a>>>18|a<<14)^(a>>>3))+x[i-7]+((c>>>17|c<<15)^(c>>>19|c<<13)^(c>>>10)))|0}
+let[a,b2,c,d,e,f,g,h]=H;for(let i=0;i<64;i++){const t1=h+((e>>>6|e<<26)^(e>>>11|e<<21)^(e>>>25|e<<7))+((e&f)^(~e&g))+K[i]+x[i],t2=((a>>>2|a<<30)^(a>>>13|a<<19)^(a>>>22|a<<10))+((a&b2)^(a&c)^(b2&c));h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b2;b2=a;a=(t1+t2)|0}
+H=[H[0]+a,H[1]+b2,H[2]+c,H[3]+d,H[4]+e,H[5]+f,H[6]+g,H[7]+h].map(v=>v|0)}
+return H.map(v=>(v>>>0).toString(16).padStart(8,"0")).join("")}
+function pinHash(pin){let h=pin;for(let i=0;i<5000;i++)h=sha256("pq-v1|"+h+"|"+pin);return h}
+function askPin(msg){ const v = prompt(msg || "Grown-up PIN:"); return v!==null && pinHash(v.trim()) === CONFIG.parentPinHash; }
 
 /* =============================================================
    PROFILES + AVATAR BUILDER
