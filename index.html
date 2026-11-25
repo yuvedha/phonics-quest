@@ -57,6 +57,7 @@ input[type=text]{font-family:inherit;font-size:28px;padding:10px 14px;border-rad
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .avsvg.bob{animation:bob 2.6s ease-in-out infinite}
 .hl{color:#e0457b;text-decoration:underline;font-weight:900;font-size:1.25em}
+body.paused *{animation-play-state:paused !important}
 .rulebox{background:#eaf6ff;border:3px solid #9fd3ff;border-radius:14px;padding:6px 12px;margin:6px auto;max-width:560px;font-size:18px;font-weight:bold;color:#1d4e89}
 .dgname{font-weight:900;font-size:44px;color:#e0457b;letter-spacing:2px}
 .stamp{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);font-size:min(46vw,260px);line-height:1;font-weight:900;pointer-events:none;z-index:20;animation:stampin .75s ease-out forwards;text-shadow:0 6px 0 rgba(0,0,0,.15)}
@@ -363,7 +364,7 @@ function loadDB(){
   try{ const d = JSON.parse(localStorage.getItem("phonicsQuestSave")); if(d && d.profiles){ d.profiles.forEach(ensure); return d; } }catch(e){}
   return {profiles:[], current:null};
 }
-function saveDB(){ try{ localStorage.setItem("phonicsQuestSave", JSON.stringify(DB)); }catch(e){} }
+function saveDB(){ try{ localStorage.setItem("phonicsQuestSave", JSON.stringify(DB)); }catch(e){} try{ scheduleFileSave(); }catch(e){} }
 function ensure(p){
   p.avatar = Object.assign({}, AV_DEFAULT, p.avatar||{});
   p.owned = p.owned || ["bg0"];
@@ -395,6 +396,7 @@ const yesterdayStr = () => new Date(Date.now()-864e5).toLocaleDateString("en-CA"
 const addDaysStr = n => new Date(Date.now()+n*864e5).toLocaleDateString("en-CA");
 const daysBetween = (a,b) => Math.floor((new Date(b)-new Date(a))/864e5);
 function needBackup(p){
+  if(typeof FS!=="undefined" && FS.state==="ready") return false;
   const base = p.lastBackup || p.created || todayStr();
   const played = p.points>0 || Object.values(p.done).some(d=>Object.keys(d).length);
   return played && daysBetween(base, todayStr()) >= 7 && todayStr() > (p.snoozeUntil||"");
@@ -403,6 +405,35 @@ function downloadBackup(){
   const p = P(); p.lastBackup = todayStr(); saveDB();
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:"application/json"}));
   a.download = "phonics-quest-backup-"+todayStr()+".json"; a.click();
+}
+
+/* ---- Auto-save progress to a file on the computer (Chrome / Edge). Keeps progress outside the browser. ---- */
+var FS = {handle:null, state:("showSaveFilePicker" in window)?"none":"unsupported", timer:null, last:""};
+function idb(mode, fn){ return new Promise((res,rej)=>{ try{
+  const rq = indexedDB.open("pq-files",1); rq.onupgradeneeded = ()=>rq.result.createObjectStore("h");
+  rq.onsuccess = ()=>{ const db = rq.result, tx = db.transaction("h",mode), r = fn(tx.objectStore("h")); tx.oncomplete = ()=>{ db.close(); res(r && r.result); }; tx.onerror = ()=>{ db.close(); rej(tx.error); }; };
+  rq.onerror = ()=>rej(rq.error); }catch(e){ rej(e); } }); }
+async function fsInit(){
+  if(FS.state==="unsupported") return;
+  try{ const h = await idb("readonly", st=>st.get("file")); if(h){ FS.handle = h; FS.state = (await h.queryPermission({mode:"readwrite"}))==="granted" ? "ready" : "needs"; } }catch(e){}
+  if(FS.state==="ready") fsWrite();
+}
+async function fsPick(){
+  try{ const h = await showSaveFilePicker({suggestedName:"phonics-quest-progress.json", types:[{description:"Phonics Quest progress", accept:{"application/json":[".json"]}}]});
+    FS.handle = h; await idb("readwrite", st=>st.put(h,"file")); FS.state = "ready"; FS.last = ""; await fsWrite(); return true; }catch(e){ return false; }
+}
+async function fsAllow(){
+  try{ FS.state = (await FS.handle.requestPermission({mode:"readwrite"}))==="granted" ? "ready" : "needs"; if(FS.state==="ready"){ FS.last = ""; await fsWrite(); } }catch(e){}
+}
+async function fsWrite(){
+  if(FS.state!=="ready" || !FS.handle) return;
+  try{ const txt = JSON.stringify(DB); if(txt===FS.last) return; const w = await FS.handle.createWritable(); await w.write(txt); await w.close(); FS.last = txt; }
+  catch(e){ FS.state = "needs"; }
+}
+function scheduleFileSave(){ if(FS.state!=="ready") return; clearTimeout(FS.timer); FS.timer = setTimeout(fsWrite, 2500); }
+async function fsRestore(){
+  try{ if(FS.state!=="ready") await fsAllow(); const f = await FS.handle.getFile(), d = JSON.parse(await f.text());
+    if(!d.profiles || !d.profiles.length) throw 0; d.profiles.forEach(ensure); DB = d; saveDB(); profilesScreen(); return true; }catch(e){ alert("Couldn't read the auto-save file."); return false; }
 }
 function dailyNow(p){ return p.daily.date===todayStr() ? p.daily : {date:todayStr(), chapters:[], count:0}; }
 
@@ -439,6 +470,8 @@ let actx;
 function tone(freqs, dur=0.12, type="sine"){
   try{
     actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==="suspended") actx.resume();
+    tidyAudio();
     let t = actx.currentTime;
     freqs.forEach(f=>{
       const o = actx.createOscillator(), g = actx.createGain();
@@ -448,6 +481,9 @@ function tone(freqs, dur=0.12, type="sine"){
     });
   }catch(e){}
 }
+let audioIdle = null;
+function tidyAudio(){ clearTimeout(audioIdle); audioIdle = setTimeout(()=>{ try{ if(actx && actx.state==="running") actx.suspend(); }catch(e){} }, 4000); }
+document.addEventListener("visibilitychange", ()=>{ document.body.classList.toggle("paused", document.hidden); try{ if(document.hidden) speechSynthesis.cancel(); }catch(e){} });
 let moodNow = "happy", moodTimer = null;
 function setMood(m){
   moodNow = m; const el = $("#topAv"), p = P();
@@ -551,7 +587,8 @@ function createProfile(){
       <div class="closet"><div class="prev" id="prev">${avatarSVG({avatar:draft.avatar, equipped:{bg:"bg0"}}, 250)}</div>
       <div class="opts" style="text-align:left"><p style="margin:0 0 8px;text-align:center"><input type="text" id="nm" maxlength="14" placeholder="Your name" value="${esc(draft.name)}"></p>
       ${lookEditor(draft.avatar)}<hr style="border:none;border-top:3px dotted #ead9ff">${clothesEditor(draft.avatar)}</div></div>
-      <div><button class="ok" id="go">Let's play! ▶</button>${DB.profiles.length?`<button class="ghost" id="cancel">Back</button>`:""}</div></div>`, ()=>{
+      <div><button class="ok" id="go">Let's play! ▶</button>${DB.profiles.length?`<button class="ghost" id="cancel">Back</button>`:""}${(!DB.profiles.length && FS.handle)?`<div><button class="small alt" id="fsRest">📂 Restore from my auto-save file</button></div>`:""}</div></div>`, ()=>{
+        const fr = $("#fsRest"); if(fr) fr.onclick = fsRestore;
         $("#nm").oninput = e=>{ draft.name = e.target.value; };
         bindBasics(draft.avatar, ()=>{ draft.name = $("#nm").value; const y=window.scrollY; draw(); window.scrollTo(0,y); });
         $("#go").onclick = ()=>{
@@ -577,6 +614,7 @@ function home(){
   const streak = (p.streak.last===todayStr() || p.streak.last===yesterdayStr()) ? p.streak.n : 0;
   const nextItem = ITEMS.filter(i=>!p.owned.includes(i.id) && i.cost>0).sort((a,b)=>a.cost-b.cost)[0];
   view(`
+    ${FS.state==="needs"?`<div class="card" style="background:#fff8d6"><b>💾 Auto-save is paused.</b> Tap to turn it back on so progress is saved to your file.<div><button class="ok small" id="fsOn">Turn auto-save on</button></div></div>`:""}
     ${needBackup(p)?`<div class="card" style="background:#fff8d6"><b>💾 Time to save a backup of ${esc(p.name)}'s progress!</b> It only takes a moment.<div><button class="ok small" id="bk">Back up now</button><button class="small ghost" id="bklater">Remind me in 2 days</button></div></div>`:""}
     <div class="card">
       <div id="av" style="cursor:pointer">${avatarSVG(p,270,moodNow)}</div>
@@ -601,6 +639,7 @@ function home(){
     $$("[data-play]").forEach(b=>b.onclick=()=>RUN[b.dataset.play](todayLevel(p,b.dataset.play)));
     $$("[data-menu]").forEach(b=>b.onclick=()=>MENU[b.dataset.menu]());
     $("#switch").onclick = profilesScreen; $("#grown").onclick = grownUp;
+    const fo = $("#fsOn"); if(fo) fo.onclick = async()=>{ await fsAllow(); home(); };
     const bk = $("#bk"); if(bk) bk.onclick = ()=>{ if(askPin("Grown-up PIN to save a backup:")){ downloadBackup(); home(); } };
     const bl = $("#bklater"); if(bl) bl.onclick = ()=>{ p.snoozeUntil = addDaysStr(2); saveDB(); home(); };
   });
@@ -1076,12 +1115,15 @@ function showGrownUp(){
     <h3>Levels reached</h3><p style="font-size:18px">${CHS.map(ch=>`${CH[ch].icon} ${CH[ch].name}: level ${todayLevel(p,ch)} of ${CH[ch].max}`).join("<br>")}</p>
     <h3>Needs more practice</h3>
     <p style="font-size:18px">${rows.length ? rows.map(r=>`<b>${esc(label(r.k))}</b> (missed ${r.miss}, right ${r.ok})`).join(" · ") : "Nothing yet!"}</p>
+    <h3>Auto-save file</h3><p style="font-size:18px">${FS.state==="unsupported"?"Not available in this browser. Use Chrome or Edge on the laptop.":FS.state==="ready"?"✅ On. Progress is saved to a file on this computer after every change, so clearing the browser will not lose it.":FS.state==="needs"?"⏸ Paused. Tap the button to turn it back on.":"Not set up yet. Choose a file once (for example in Documents) and progress saves there automatically."}</p>${FS.state==="none"?`<button class="small ok" id="fsPick">💾 Choose auto-save file</button>`:""}${FS.state==="needs"?`<button class="small ok" id="fsOn2">▶ Turn auto-save on</button>`:""}${FS.state==="ready"?`<button class="small ghost" id="fsPick">Change file</button>`:""}
     <h3>Backup</h3><p style="font-size:18px">Last backup: <b>${p.lastBackup||"never"}</b>. The home screen reminds you each week.</p><h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
     <div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
     <input type="file" id="file" accept=".json" style="display:none">
     <button class="small alt" id="del">Delete this player</button></div>`, ()=>{
       $("#del").onclick = ()=>{ if(confirm("Delete "+p.name+" and all their progress?")){ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); } };
       $("#exp").onclick = ()=>{ downloadBackup(); showGrownUp(); };
+      const fp = $("#fsPick"); if(fp) fp.onclick = async()=>{ await fsPick(); showGrownUp(); };
+      const f2 = $("#fsOn2"); if(f2) f2.onclick = async()=>{ await fsAllow(); showGrownUp(); };
       $("#imp").onclick = ()=>$("#file").click();
       $("#file").onchange = e=>{
         const f = e.target.files[0]; if(!f) return;
@@ -1095,6 +1137,7 @@ function showGrownUp(){
 /* =============================================================
    START
    ============================================================= */
+fsInit().then(()=>{ if(DB.profiles.length===0 && FS.handle) createProfile(); else if(FS.state==="needs" && P() && document.querySelector("#closet")) home(); });
 if(DB.profiles.length === 0){ applyTheme(); createProfile(); }
 else if(DB.profiles.length === 1){ DB.current = DB.profiles[0].id; home(); }
 else profilesScreen();

@@ -12,3 +12,10 @@ daily levels, and a dress-up avatar earned with points.
 Progress is saved in the browser on each device, not in this repo. Use
 Grown-up corner > "Save a backup file" to keep a copy. The home screen
 reminds you once a week.
+
+## Where progress is kept
+- Progress lives in the browser (localStorage) and, once a grown-up chooses an auto-save file in the Grown-up corner (Chrome or Edge), it is also written to that file automatically after every change. Use "Restore from my auto-save file" on a fresh browser.
+- The grown-up PIN is stored only as a salted hash (`CONFIG.parentPinHash`). To change it, run `pinHash("newpin")` in the browser console and paste the result in.
+
+## Rule levels
+Levels can carry a `rule:"..."` line that is shown to the child (FLOSS, soft c and g, tch/dge, -le, -tion).
