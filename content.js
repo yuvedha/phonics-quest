@@ -148,3 +148,35 @@ DETECTIVE.push(
   {name:"silent letters: kn wr mb gh", items:[["kn","knee","🦵"],["kn","knot","🪢"],["kn","knock","🚪"],["wr","write","✍️"],["wr","wrap","🎁"],["wr","wrist","⌚"],["mb","lamb","🐑"],["mb","climb","🧗"],["mb","comb","💇"],["gh","ghost","👻"]]},
   {name:"blends: bl cl fl gr tr dr sn sp st", items:[["bl","blue","🔵"],["bl","blanket","🛏️"],["cl","clock","🕐"],["cl","cloud","☁️"],["fl","flag","🚩"],["fl","flower","🌸"],["gr","grapes","🍇"],["gr","green","🟢"],["tr","train","🚂"],["tr","tree","🌳"],["dr","drum","🥁"],["dr","dragon","🐉"],["sn","snail","🐌"],["sn","snake","🐍"],["sp","spider","🕷️"],["sp","spoon","🥄"],["st","star","⭐"],["st","stone","🪨"]]}
 );
+
+/* =============================================================
+   NEW LEVELS, batch 2 (added after first play-test: she loved Picture Quest
+   and Missing Letters, and Chapter 2 was too easy, so it now gets harder sounds)
+   ============================================================= */
+
+/* ---- Chapter 1: Missing Letters, levels 14 to 18 (3 blanks) ---- */
+WORD_LEVELS.push(
+  {name:"Question and place words", blanks:3, words:["because","every","people","water","would","could","should","where","there","their","these","those"]},
+  {name:"Family and friends", blanks:3, words:["friend","brother","sister","mother","father","family","baby","uncle","cousin","neighbour","teacher","children"]},
+  {name:"Year 2: busy words", blanks:3, words:["again","before","after","other","another","never","always","around","while","which","only","under"]},
+  {name:"School and learning", blanks:3, words:["school","library","lesson","reading","writing","spelling","question","number","picture","playground","homework","beautiful"]},
+  {name:"Big challenge words", blanks:3, words:["thought","enough","laugh","daughter","though","straight","weight","knowledge","exercise","separate","believe","guess"]}
+);
+
+/* ---- Chapter 2: Say the Sounds, groups 8 to 12 (digraphs and patterns) ---- */
+SOUND_GROUPS[8] = [["ay","play","🎮"],["ow","cow","🐄"],["aw","paw","🐾"],["au","author","📖"],["ew","chew","😋"],["igh","night","🌙"],["oy","toy","🧸"],["ir","bird","🐦"]];
+SOUND_GROUPS[9] = [["ur","turn","🔄"],["ph","phone","📱"],["wh","whale","🐳"],["a-e","cake","🎂"],["i-e","kite","🪁"],["o-e","home","🏠"],["u-e","cube","🧊"],["ea","sea","🌊"]];
+SOUND_GROUPS[10] = [["tch","match","🔥"],["dge","bridge","🌉"],["ck","duck","🦆"],["ss","grass","🌱"],["ll","bell","🔔"],["ff","puff","💨"],["zz","buzz","🐝"],["ng","king","🤴"]];
+SOUND_GROUPS[11] = [["ou","mouse","🐭"],["ow","snow","❄️"],["oo","moon","🌙"],["air","chair","🪑"],["ear","ear","👂"],["are","share","🤝"],["ore","more","➕"],["ure","pure","💧"]];
+SOUND_GROUPS[12] = [["kn","knee","🦵"],["wr","wrap","🎁"],["mb","lamb","🐑"],["gh","ghost","👻"],["tion","station","🚉"],["ough","though","🤔"],["ci","special","🌟"],["ge","cage","🐦"]];
+
+/* ---- Chapter 4: Picture Quest, levels 11 to 17 ---- */
+PICTURE_LEVELS.push(
+  {name:"Yummy food", items:[["pizza","🍕"],["burger","🍔"],["sandwich","🥪"],["pancake","🥞"],["cookie","🍪"],["cupcake","🧁"],["popcorn","🍿"],["cheese","🧀"],["honey","🍯"],["noodles","🍜"],["icecream","🍦"],["donut","🍩"]]},
+  {name:"Weather and sky", items:[["rainbow","🌈"],["lightning","⚡"],["thunder","⛈️"],["tornado","🌪️"],["snowman","⛄"],["umbrella","☂️"],["sunshine","🌞"],["comet","☄️"],["planet","🪐"],["volcano","🌋"],["wave","🌊"],["feather","🪶"]]},
+  {name:"At home", items:[["kitchen","🍳"],["bedroom","🛏️"],["sofa","🛋️"],["mirror","🪞"],["toilet","🚽"],["shower","🚿"],["lamp","💡"],["key","🔑"],["clock","🕐"],["scissors","✂️"],["broom","🧹"],["soap","🧼"]]},
+  {name:"Clothes", items:[["shirt","👕"],["jeans","👖"],["dress","👗"],["jacket","🧥"],["scarf","🧣"],["gloves","🧤"],["socks","🧦"],["boots","🥾"],["sandal","👡"],["crown","👑"],["glasses","👓"],["backpack","🎒"]]},
+  {name:"Out and about", items:[["bridge","🌉"],["airport","🛫"],["hospital","🏥"],["school","🏫"],["station","🚉"],["bakery","🥖"],["farm","🚜"],["beach","🏖️"],["mountain","⛰️"],["forest","🌲"],["desert","🏜️"],["fountain","⛲"]]},
+  {name:"Sea and bugs", items:[["octopus","🐙"],["crab","🦀"],["turtle","🐢"],["jellyfish","🪼"],["whale","🐋"],["butterfly","🦋"],["ladybird","🐞"],["spider","🕷️"],["caterpillar","🐛"],["snail","🐌"],["scorpion","🦂"],["starfish","⭐"]]},
+  {name:"Super tricky", items:[["rhinoceros","🦏"],["elephant","🐘"],["crocodile","🐊"],["skeleton","💀"],["telescope","🔭"],["microphone","🎤"],["calendar","📅"],["scooter","🛴"],["helicopter","🚁"],["ambulance","🚑"],["triangle","🔺"],["diamond","💎"]]}
+);
