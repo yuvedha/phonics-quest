@@ -56,7 +56,12 @@ input[type=text]{font-family:inherit;font-size:28px;padding:10px 14px;border-rad
 @keyframes pulse{50%{transform:scale(1.08)}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .avsvg.bob{animation:bob 2.6s ease-in-out infinite}
-.hl{color:#e0457b;text-decoration:underline}
+.hl{color:#e0457b;text-decoration:underline;font-weight:900;font-size:1.25em}
+.rulebox{background:#eaf6ff;border:3px solid #9fd3ff;border-radius:14px;padding:6px 12px;margin:6px auto;max-width:560px;font-size:18px;font-weight:bold;color:#1d4e89}
+.dgname{font-weight:900;font-size:44px;color:#e0457b;letter-spacing:2px}
+.stamp{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);font-size:min(46vw,260px);line-height:1;font-weight:900;pointer-events:none;z-index:20;animation:stampin .75s ease-out forwards;text-shadow:0 6px 0 rgba(0,0,0,.15)}
+.stamp.yes{color:#1fbf6a}.stamp.no{color:#e0233f}
+@keyframes stampin{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
 .pill{display:inline-block;background:#fff;border:3px solid #ead9ff;border-radius:999px;padding:4px 12px;margin:3px;font-size:18px}
 .wordbtn{font-size:22px;padding:8px 14px}
 .closet{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
@@ -94,6 +99,7 @@ const SKIN  = ["#ffe0c2","#f6c9a0","#e0a878","#c68642","#8d5524","#5c3a1e"];
 const HAIRC = ["#2b1b10","#6b3f1d","#c8802d","#f2c94c","#d6406b","#3a7bd5","#9b5de5","#2ec4b6","#ff6fb5","#c7ccd6"];
 const TOPC  = ["#ff6b9d","#4dabf7","#51cf66","#ffd43b","#9775fa","#ff922b","#2ec4b6","#e03131","#ffffff","#2b2d42"];
 const BOTC  = ["#3b5bdb","#1c7ed6","#2b2d42","#ff6b9d","#9775fa","#51cf66","#ffd43b","#e8590c","#f1f3f5","#845ef7"];
+const EYEC  = ["#5b3a1e","#2b1b10","#a8742c","#2e9e5b","#3a7bd5","#8d99ae","#9b5de5","#e0457b","#c98a0e","#1fa8a0"];
 const SHOEC = ["#ffffff","#ff6b9d","#4dabf7","#2b2d42","#ffd43b","#9775fa"];
 const HAIRS = [["short","Short"],["bob","Bob"],["long","Long"],["wavy","Wavy"],["bun","Top bun"],["spacebuns","Space buns"],["curly","Curly"],["afro","Afro puff"],["pigtails","Pigtails"],["ponytail","Ponytail"],["braid","Braid"],["puffs","Puffs"],["mohawk","Mohawk"],["none","Bald"]];
 const EYES  = [["round","Round"],["sparkle","Sparkly"],["happy","Happy"],["lashes","Lashes"],["stars","Star eyes"],["hearts","Heart eyes"],["wink","Wink"],["sleepy","Sleepy"]];
@@ -101,7 +107,7 @@ const MOUTHS = [["smile","Smile"],["grin","Big grin"],["cat","Cat smile"],["tong
 const TOPS = [["tee","T-shirt"],["long","Long sleeve"],["hoodie","Hoodie"],["tank","Tank top"]];
 const BOTTOMS = [["shorts","Shorts"],["pants","Pants"],["skirt","Skirt"],["leggings","Leggings"]];
 const DRESSES = [["none","No dress"],["twirl","Twirly dress"],["tutu","Tutu dress"],["party","Party dress"]];
-const AV_DEFAULT = {skin:1, hair:"short", hairColor:1, eyes:"round", mouth:"smile", topStyle:"tee", top:1, bottomStyle:"shorts", bottom:1, dress:"none", shoes:0};
+const AV_DEFAULT = {eyeColor:0, skin:1, hair:"short", hairColor:1, eyes:"round", mouth:"smile", topStyle:"tee", top:1, bottomStyle:"shorts", bottom:1, dress:"none", shoes:0};
 
 const SLOTS = {ears:"Ears & horns", hat:"Hats", hairacc:"Hair bits", glasses:"Glasses", earrings:"Earrings", face:"Face sparkle", costume:"Glam outfits", neck:"Necklaces & scarves", back:"Capes & wings", aura:"Sparkle effects", held:"Hold something", pet:"Pets", bg:"Avatar scenes", theme:"App themes"};
 const TAB_SLOTS = {clothes:["costume"], head:["ears","hat","hairacc","glasses","earrings","face"], glam:["neck","back","aura","held"], fun:["pet","bg"], theme:["theme"]};
@@ -199,7 +205,7 @@ function avatarSVG(p, size=190, mood="happy"){
   const small = size < 80;
   const vb = small ? [52,30,116,124] : [0,0,220,320];
   const gid = "g" + Math.random().toString(36).slice(2,8);
-  const skin = SKIN[a.skin] || SKIN[1], hc = HAIRC[a.hairColor] || HAIRC[1];
+  const eyeC = EYEC[a.eyeColor] || EYEC[0], skin = SKIN[a.skin] || SKIN[1], hc = HAIRC[a.hairColor] || HAIRC[1];
   let top = TOPC[a.top] || TOPC[1], bot = BOTC[a.bottom] || BOTC[0], shoe = SHOEC[a.shoes] || SHOEC[0];
   let topStyle = a.topStyle, bottomStyle = a.bottomStyle, dress = a.dress;
   const cs = eq.costume, fullCos = ["o_gown","o_disco","o_mermaid"].includes(cs);
@@ -208,7 +214,7 @@ function avatarSVG(p, size=190, mood="happy"){
   if(fullCos) dress = "none";
   const H = Math.round(size*vb[3]/vb[2]);
   let s = `<svg class="avsvg ${size>=150?"bob":""}" viewBox="${vb.join(" ")}" width="${size}" height="${H}" style="border-radius:${small?18:28}px;max-width:100%">
-    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bg.c[0]}"/><stop offset="1" stop-color="${bg.c[1]}"/></linearGradient></defs>
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bg.c[0]}"/><stop offset="1" stop-color="${bg.c[1]}"/></linearGradient><radialGradient id="${gid}s" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="${skin}"/><stop offset=".7" stop-color="${skin}"/><stop offset="1" stop-color="${darker(skin,22)}"/></radialGradient><radialGradient id="${gid}i" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="${eyeC}"/><stop offset="1" stop-color="${darker(eyeC,55)}"/></radialGradient></defs>
     <rect width="220" height="320" fill="url(#${gid})"/>`;
   if(!small){
     s += `<ellipse cx="110" cy="310" rx="62" ry="8" fill="#000" opacity=".1"/>`;
@@ -237,7 +243,7 @@ function avatarSVG(p, size=190, mood="happy"){
   if(legs){
     s += `<rect x="88" y="232" width="18" height="64" rx="8" fill="${skin}"/><rect x="114" y="232" width="18" height="64" rx="8" fill="${skin}"/>`;
     if(bottomStyle==="leggings" && dress==="none" && !fullCos) s += `<rect x="87" y="228" width="20" height="68" rx="9" fill="${bot}"/><rect x="113" y="228" width="20" height="68" rx="9" fill="${bot}"/>`;
-    s += `<ellipse cx="97" cy="302" rx="17" ry="9" fill="${shoe}" stroke="#0002"/><ellipse cx="123" cy="302" rx="17" ry="9" fill="${shoe}" stroke="#0002"/>`;
+    s += `<ellipse cx="97" cy="302" rx="17" ry="9" fill="${shoe}" stroke="#0002"/><ellipse cx="123" cy="302" rx="17" ry="9" fill="${shoe}" stroke="#0002"/><ellipse cx="92" cy="299" rx="7" ry="2.5" fill="#fff" opacity=".4"/><ellipse cx="118" cy="299" rx="7" ry="2.5" fill="#fff" opacity=".4"/>`;
   }
   if(dress==="none" && !fullCos){
     if(bottomStyle==="shorts") s += `<rect x="82" y="224" width="27" height="40" rx="9" fill="${bot}"/><rect x="111" y="224" width="27" height="40" rx="9" fill="${bot}"/>`;
@@ -275,10 +281,10 @@ function avatarSVG(p, size=190, mood="happy"){
   if(eq.neck==="n2") s += `<path d="M110 162 L90 150 L90 174Z M110 162 L130 150 L130 174Z" fill="#e03131"/><circle cx="110" cy="162" r="5" fill="#a51111"/>`;
   if(eq.neck==="n1") s += Array.from({length:9},(_,i)=>{ const th=Math.PI*i/8; return `<circle cx="${110-24*Math.cos(th)}" cy="${150+18*Math.sin(th)}" r="3.6" fill="#fff" stroke="#d6d6d6"/>`; }).join("");
   if(eq.neck==="n4") s += `<path d="M90 150 Q110 184 130 150" stroke="#ffd43b" stroke-width="2" fill="none"/>${T(110,184,20,"💖")}`;
-  s += `<circle cx="64" cy="108" r="9" fill="${skin}"/><circle cx="156" cy="108" r="9" fill="${skin}"/><circle cx="110" cy="100" r="46" fill="${skin}"/>`;
+  s += `<ellipse cx="110" cy="148" rx="26" ry="8" fill="#000" opacity=".1"/><circle cx="64" cy="108" r="9" fill="${skin}"/><circle cx="64" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="156" cy="108" r="9" fill="${skin}"/><circle cx="156" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="110" cy="100" r="46" fill="url(#${gid}s)"/><ellipse cx="94" cy="72" rx="16" ry="7" fill="#fff" opacity=".14"/>`;
   // hair front
   const cap = `<path d="M62 100 Q60 50 110 48 Q160 50 158 100 Q140 74 110 76 Q80 74 62 100Z" fill="${hc}"/>`;
-  if(["short","bob","long","wavy","bun","spacebuns","afro","pigtails","ponytail","braid","puffs"].includes(a.hair)) s += cap;
+  if(["short","bob","long","wavy","bun","spacebuns","afro","pigtails","ponytail","braid","puffs"].includes(a.hair)) s += cap + `<path d="M76 70 Q94 56 120 58" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".28"/>`;
   if(a.hair==="bun") s += `<circle cx="110" cy="40" r="20" fill="${hc}"/>`;
   if(a.hair==="spacebuns") s += `<circle cx="72" cy="56" r="18" fill="${hc}"/><circle cx="148" cy="56" r="18" fill="${hc}"/>`;
   if(a.hair==="puffs") s += `<circle cx="68" cy="58" r="22" fill="${hc}"/><circle cx="152" cy="58" r="22" fill="${hc}"/>`;
@@ -296,23 +302,32 @@ function avatarSVG(p, size=190, mood="happy"){
   // eyes
   const exs = [94,126], ey = 102;
   const E = a.eyes;
-  if(E==="round") s += exs.map(x=>`<circle cx="${x}" cy="${ey}" r="6.5" fill="#222"/><circle cx="${x+2}" cy="${ey-2}" r="2" fill="#fff"/>`).join("");
-  if(E==="sparkle") s += exs.map(x=>`<circle cx="${x}" cy="${ey}" r="11" fill="#222"/><circle cx="${x-3}" cy="${ey-4}" r="3.6" fill="#fff"/><circle cx="${x+3}" cy="${ey+4}" r="1.8" fill="#fff"/>`).join("");
-  if(E==="happy") s += exs.map(x=>`<path d="M${x-10} ${ey+4} Q${x} ${ey-10} ${x+10} ${ey+4}" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>`).join("");
-  if(E==="lashes") s += exs.map((x,i)=>`<circle cx="${x}" cy="${ey}" r="7" fill="#222"/><circle cx="${x+2}" cy="${ey-2}" r="2" fill="#fff"/><path d="M${x+(i?8:-8)} ${ey-6} L${x+(i?15:-15)} ${ey-11} M${x+(i?5:-5)} ${ey-9} L${x+(i?9:-9)} ${ey-16}" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>`).join("");
+  const eyeX = (x, r, lash, i)=>{
+    const sx = i?1:-1;
+    let o = `<ellipse cx="${x}" cy="${ey}" rx="${r*1.3}" ry="${r*1.12}" fill="#fff"/><circle cx="${x}" cy="${ey}" r="${r}" fill="url(#${gid}i)"/><circle cx="${x}" cy="${ey}" r="${r*0.5}" fill="#111"/><circle cx="${x+r*0.32}" cy="${ey-r*0.38}" r="${r*0.3}" fill="#fff"/><circle cx="${x-r*0.3}" cy="${ey+r*0.4}" r="${r*0.14}" fill="#fff" opacity=".85"/><path d="M${x-r*1.35} ${ey-r*0.1} Q${x} ${ey-r*1.55} ${x+r*1.35} ${ey-r*0.1}" stroke="#2a1a14" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    if(lash) o += `<path d="M${x+sx*r*1.2} ${ey-r*0.6} L${x+sx*r*1.9} ${ey-r*1.25} M${x+sx*r*0.7} ${ey-r*1.05} L${x+sx*r*1.1} ${ey-r*1.9} M${x+sx*r*0.1} ${ey-r*1.3} L${x+sx*r*0.15} ${ey-r*2.05}" stroke="#2a1a14" stroke-width="2.4" stroke-linecap="round"/>`;
+    return o;
+  };
+  if(E==="round") s += exs.map((x,i)=>eyeX(x,7,false,i)).join("");
+  if(E==="sparkle") s += exs.map((x,i)=>eyeX(x,10,true,i)+`<circle cx="${x-3}" cy="${ey-4}" r="1.6" fill="#fff"/>`).join("");
+  if(E==="happy") s += exs.map(x=>`<path d="M${x-10} ${ey+4} Q${x} ${ey-10} ${x+10} ${ey+4}" stroke="#2a1a14" stroke-width="4" fill="none" stroke-linecap="round"/>`).join("");
+  if(E==="lashes") s += exs.map((x,i)=>eyeX(x,7.5,true,i)).join("");
   if(E==="stars") s += exs.map(x=>T(x,ey+9,26,"⭐")).join("");
   if(E==="hearts") s += exs.map(x=>T(x,ey+9,26,"💗")).join("");
-  if(E==="wink") s += `<circle cx="94" cy="${ey}" r="6.5" fill="#222"/><circle cx="96" cy="${ey-2}" r="2" fill="#fff"/><path d="M116 ${ey+3} Q126 ${ey-9} 136 ${ey+3}" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  if(E==="wink") s += eyeX(94,7,true,0) + `<path d="M116 ${ey+3} Q126 ${ey-9} 136 ${ey+3}" stroke="#2a1a14" stroke-width="4" fill="none" stroke-linecap="round"/>`;
   if(E==="sleepy") s += exs.map(x=>`<path d="M${x-10} ${ey-2} Q${x} ${ey+9} ${x+10} ${ey-2}" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>`).join("");
+  const browC = darker(hc,10);
+  if(!['stars','hearts'].includes(E)) s += `<path d="M82 ${ey-17} Q94 ${ey-23} 106 ${ey-17}" stroke="${browC}" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M114 ${ey-17} Q126 ${ey-23} 138 ${ey-17}" stroke="${browC}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
+  s += `<path d="M107 113 Q110 118 114 113" stroke="${darker(skin,38)}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7"/>`;
   s += `<circle cx="78" cy="118" r="8" fill="#ff7b9c" opacity=".35"/><circle cx="142" cy="118" r="8" fill="#ff7b9c" opacity=".35"/>`;
   // mouth
   const M = a.mouth;
-  if(mood==="cheer") s += `<path d="M92 120 Q110 150 128 120 Z" fill="#c2185b" stroke="#222" stroke-width="3" stroke-linejoin="round"/><path d="M100 134 Q110 144 120 134 Q110 128 100 134Z" fill="#ff8fa3"/>`;
-  else if(mood==="oops") s += `<ellipse cx="110" cy="128" rx="6" ry="8" fill="#c2185b" stroke="#222" stroke-width="3"/>`;
-  else if(M==="grin") s += `<path d="M92 120 Q110 142 128 120Z" fill="#fff" stroke="#222" stroke-width="3.5" stroke-linejoin="round"/>`;
-  else if(M==="cat") s += `<path d="M96 122 Q103 132 110 122 Q117 132 124 122" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
-  else if(M==="tongue") s += `<path d="M94 121 Q110 138 126 121" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M104 130 Q110 144 116 130Z" fill="#ff7b9c" stroke="#222" stroke-width="2"/>`;
-  else s += `<path d="M94 121 Q110 138 126 121" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  if(mood==="cheer") s += `<path d="M92 120 Q110 150 128 120 Z" fill="#c2185b" stroke="#7d1230" stroke-width="3" stroke-linejoin="round"/><path d="M100 134 Q110 144 120 134 Q110 128 100 134Z" fill="#ff8fa3"/>`;
+  else if(mood==="oops") s += `<ellipse cx="110" cy="128" rx="6" ry="8" fill="#c2185b" stroke="#7d1230" stroke-width="3"/>`;
+  else if(M==="grin") s += `<path d="M92 120 Q110 142 128 120Z" fill="#fff" stroke="#a3213f" stroke-width="3.5" stroke-linejoin="round"/>`;
+  else if(M==="cat") s += `<path d="M96 122 Q103 132 110 122 Q117 132 124 122" stroke="#a3213f" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+  else if(M==="tongue") s += `<path d="M94 121 Q110 138 126 121" stroke="#a3213f" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M104 130 Q110 144 116 130Z" fill="#ff7b9c" stroke="#a3213f" stroke-width="2"/>`;
+  else s += `<path d="M94 121 Q110 138 126 121" stroke="#a3213f" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M102 127 Q110 131 118 127" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".55"/>`;
   // face extras
   if(eq.face==="f1") s += [[82,114],[90,118],[76,119],[138,114],[130,118],[144,119]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2" fill="#a0522d"/>`).join("");
   if(eq.face==="f2") s += T(74,126,20,"✨")+T(146,126,20,"✨");
@@ -440,8 +455,13 @@ function setMood(m){
   clearTimeout(moodTimer);
   moodTimer = setTimeout(()=>{ moodNow = "happy"; const e2 = $("#topAv"), p2 = P(); if(e2 && p2) e2.innerHTML = avatarSVG(p2, 46, "happy"); }, 1400);
 }
-const sndGood = ()=>{ tone([523,659,784]); setMood("cheer"); };
-const sndBad  = ()=>{ tone([220,180],0.15,"triangle"); setMood("oops"); };
+function stamp(ok){
+  $$(".stamp").forEach(e=>e.remove());
+  const d = document.createElement("div"); d.className = "stamp "+(ok?"yes":"no"); d.textContent = ok ? "✔" : "✘";
+  document.body.appendChild(d); setTimeout(()=>d.remove(), 800);
+}
+const sndGood = ()=>{ tone([523,659,784]); setMood("cheer"); stamp(true); };
+const sndBad  = ()=>{ tone([220,180],0.15,"triangle"); setMood("oops"); stamp(false); };
 const sndWin  = ()=>{ tone([523,659,784,1047],0.14); setMood("cheer"); };
 function confetti(n=24){
   const em = ["🎉","⭐","✨","🌟","🎈","💖"];
@@ -456,6 +476,7 @@ function addPoints(n){
   const p = P(); p.points += n; saveDB();
   const el = $("#pts"); if(el){ el.textContent = "⭐ "+p.points; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 }
+let backTo = null;
 let timers = [];
 const later = (fn, ms)=>{ timers.push(setTimeout(fn, ms)); };
 function clearTimers(){ timers.forEach(clearTimeout); timers = []; stopListening(); }
@@ -473,12 +494,13 @@ function view(inner, bind, opts={}){
   const p = P();
   const top = p && !opts.bare ? `
     <div class="top">
-      <button class="small alt" id="homeBtn">🏠 Home</button>
+      <div class="row" style="gap:6px;margin:0"><button class="small alt" id="homeBtn">🏠 Home</button>${backTo?`<button class="small" id="backBtn">⬅ Back</button>`:""}</div>
       <div class="row" style="font-size:18px;gap:8px"><span id="topAv">${avatarSVG(p,46,moodNow)}</span> <b>${esc(p.name)}</b></div>
       <div class="pts" id="pts">⭐ ${p.points}</div>
     </div>` : "";
   app.innerHTML = top + inner;
-  const hb = $("#homeBtn"); if(hb) hb.onclick = home;
+  const hb = $("#homeBtn"); if(hb) hb.onclick = ()=>{ backTo = null; home(); };
+  const bb = $("#backBtn"); if(bb) bb.onclick = ()=>{ const f = backTo; backTo = null; if(f) f(); };
   if(bind) bind();
 }
 // PIN is stored only as a salted, repeated SHA-256 hash (no plain text). To change it: run pinHash("newpin") in the browser console and paste the result into CONFIG.parentPinHash.
@@ -508,7 +530,7 @@ const optRow = (label,key,arr,cur) => `<div style="margin:8px 0"><b>${label}</b>
 const swRow = (label,key,arr,cur) => `<div style="margin:8px 0"><b>${label}</b><div class="row">${arr.map((c,i)=>`<button class="sw ${cur===i?"on":""}" data-k="${key}" data-i="${i}" style="background:${c}"></button>`).join("")}</div></div>`;
 function lookEditor(av){
   return swRow("Skin","skin",SKIN,av.skin) + optRow("Hair style","hair",HAIRS,av.hair) + swRow("Hair colour","hairColor",HAIRC,av.hairColor)
-       + optRow("Eyes","eyes",EYES,av.eyes) + optRow("Smile","mouth",MOUTHS,av.mouth);
+       + optRow("Eyes","eyes",EYES,av.eyes) + swRow("Eye colour","eyeColor",EYEC,av.eyeColor) + optRow("Smile","mouth",MOUTHS,av.mouth);
 }
 function clothesEditor(av){
   const d = av.dress==="none";
@@ -548,6 +570,7 @@ function createProfile(){
    ============================================================= */
 function todayLevel(p, ch){ return Math.min(p.prog[ch], CH[ch].max); }
 function home(){
+  backTo = null;
   const p = P(); if(!p) return profilesScreen();
   applyTheme();
   const d = dailyNow(p), goalDone = d.count >= 1;
@@ -626,13 +649,14 @@ function closet(){
    ============================================================= */
 const MENU = {}, RUN = {};
 function levelMenu(ch, rows){
+  backTo = null;
   const p = P(), cur = todayLevel(p, ch);
   view(`<div class="card"><h2>${CH[ch].icon} ${CH[ch].name}</h2><p style="font-size:18px">${CH[ch].about}</p>
     ${rows.map((r,i)=>{
       const lv = i+1, st = p.done[ch][lv]||0, locked = lv > cur;
       return `<div class="card ch ${lv===cur?"today":""}" style="margin:8px 0;padding:12px"><div><h3>Level ${lv}${lv===cur?" ⭐ Today":""}</h3><div style="font-size:16px">${r}</div><div style="font-size:22px">${"⭐".repeat(st)}${"☆".repeat(3-st)}</div></div>
         <button class="${locked?"ghost":"ok"}" data-lv="${lv}" ${locked?"disabled":""}>${locked?"🔒":"Play ▶"}</button></div>`;
-    }).join("")}</div>`, ()=>{ $$("[data-lv]").forEach(b=>b.onclick=()=>RUN[ch](+b.dataset.lv)); });
+    }).join("")}</div>`, ()=>{ $$("[data-lv]").forEach(b=>b.onclick=()=>{ backTo = ()=>MENU[ch](); RUN[ch](+b.dataset.lv); }); });
 }
 
 function recordLevelDone(ch, level, stars){
@@ -748,7 +772,7 @@ RUN.c1 = level=>{
     function draw(msg, cls){
       view(`<div class="card"><h2>Missing Letters ${i+1}/${qs.length}</h2>
         <div class="bar"><div style="width:${i/qs.length*100}%"></div></div>
-        <p style="font-size:20px;margin-bottom:0">Listen, then type the ${nb>1?nb+" ":""}missing letter${nb>1?"s":""}!</p>
+        ${L.rule?`<div class="rulebox">📘 ${L.rule}</div>`:""}<p style="font-size:20px;margin-bottom:0">Listen, then type the ${nb>1?nb+" ":""}missing letter${nb>1?"s":""}!</p>
         <button id="say">🔊 Hear the word</button>
         <div class="letters">${w.split("").map((ch,k)=>{
           const bi = idxs.indexOf(k), sm = w.length>7?"sm":"";
@@ -900,7 +924,7 @@ RUN.c2 = group=>{
    CHAPTER 3: DIGRAPH LESSONS (meet, sort by sound, spell)
    ============================================================= */
 const hlWord = (L,w)=>{ const i = L.atEnd ? w.lastIndexOf(L.dg) : w.indexOf(L.dg); return i<0 ? w : w.slice(0,i)+`<span class="hl">${L.dg}</span>`+w.slice(i+L.dg.length); };
-MENU.c3 = ()=>levelMenu("c3", LESSONS.map(l=>`“${l.dg}” · ${l.sounds.length} sounds`));
+MENU.c3 = ()=>levelMenu("c3", LESSONS.map(l=>`<span class="dgname" style="font-size:34px">“${l.dg}”</span> · ${l.sounds.length} sound${l.sounds.length>1?"s":""}`));
 RUN.c3 = level=>{
   const L = LESSONS[level-1];
   const all = L.sounds.flatMap((s,si)=>s.words.map(([w,e])=>({w, e, si})));
@@ -917,7 +941,7 @@ RUN.c3 = level=>{
   const run = {pts:0, sortFirst:0, spellFirst:0};
 
   function meet(){
-    view(`<div class="card"><h2>📗 Lesson ${level}: “${L.dg}”</h2><p style="font-size:22px">${L.intro}</p>
+    view(`<div class="card"><h2>📗 Lesson ${level}</h2><div class="dgname">“${L.dg}”</div><p style="font-size:22px">${L.intro}</p>
       ${L.sounds.map((s,si)=>`<div class="item" style="margin:10px 0"><div style="font-size:24px"><b class="hl">${L.dg}</b> says <b>${s.say}</b> <span style="font-size:34px">${s.keyPic}</span></div>
         <div>${s.words.map(([w,e])=>`<button class="ghost wordbtn" data-w="${w}">${e} ${hlWord(L,w)}</button>`).join("")}</div></div>`).join("")}
       <p style="font-size:18px">Tap a word to hear it!</p>
@@ -987,7 +1011,7 @@ RUN.c4 = level=>{
   function q(){
     if(i >= qs.length) return finishScreen("c4", level, run, run.first/qs.length, 0.7, 0.4);
     const [word, emoji] = qs[i];
-    spellStep({word, emoji, title:`🖼️ What is it? ${i+1}/${qs.length}`, progress:i/qs.length, say:true, noAudio:true, hint:"Say the word if you can, then spell it!"}, r=>{
+    spellStep({word, emoji, title:`🖼️ What is it? ${i+1}/${qs.length}`, progress:i/qs.length, say:true, noAudio:true, hint:"Say the word if you can, then spell it!"+(PICTURE_LEVELS[level-1].rule?`<div class="rulebox">📘 ${PICTURE_LEVELS[level-1].rule}</div>`:"")}, r=>{
       const pts = spellPoints(r, 10);
       if(r.mistakes===0 && !r.usedHint){ run.first++; stat("p:"+word).ok++; } else stat("p:"+word).miss++;
       run.pts += pts; addPoints(pts); i++; q();
@@ -1008,12 +1032,13 @@ RUN.c5 = level=>{
   function q(){
     if(i >= qs.length) return finishScreen("c5", level, run, run.first/qs.length, 0.8, 0.5);
     const [dg, word, emoji] = qs[i], at = word.indexOf(dg);
-    const opts = shuffle([dg, ...pick(allD.filter(d=>d!==dg), 3)]);
+    const lvD = [...new Set(pool.map(x=>x[0]))].filter(d=>d!==dg), others = lvD.length>=3 ? lvD : [...lvD, ...allD.filter(d=>d!==dg && !lvD.includes(d))];
+    const opts = shuffle([dg, ...pick(others, 3)]);
     let attempts = 0, done = false, wrongPicks = [];
     function draw(msg, cls){
       view(`<div class="card"><h2>Find the digraph ${i+1}/${qs.length}</h2>
         <div class="bar"><div style="width:${i/qs.length*100}%"></div></div>
-        <div class="big">${emoji||"🔊"}</div>
+        ${DETECTIVE[level-1].rule?`<div class="rulebox">📘 ${DETECTIVE[level-1].rule}</div>`:""}<div class="big">${emoji||"🔊"}</div>
         <div class="letters" style="margin:6px 0">${word.slice(0,at).split("").map(c=>`<div class="lt">${c}</div>`).join("")}<div class="lt ${done?"good":"blank"}" style="min-width:${done?64:90}px;width:auto;padding:0 10px">${done?dg:"?"}</div>${word.slice(at+dg.length).split("").map(c=>`<div class="lt">${c}</div>`).join("")}</div>
         <button id="say">🔊 Hear the word</button>
         <div class="msg ${cls||""}">${msg||""}</div>

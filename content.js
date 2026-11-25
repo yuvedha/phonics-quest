@@ -180,3 +180,36 @@ PICTURE_LEVELS.push(
   {name:"Sea and bugs", items:[["octopus","🐙"],["crab","🦀"],["turtle","🐢"],["jellyfish","🪼"],["whale","🐋"],["butterfly","🦋"],["ladybird","🐞"],["spider","🕷️"],["caterpillar","🐛"],["snail","🐌"],["scorpion","🦂"],["starfish","⭐"]]},
   {name:"Super tricky", items:[["rhinoceros","🦏"],["elephant","🐘"],["crocodile","🐊"],["skeleton","💀"],["telescope","🔭"],["microphone","🎤"],["calendar","📅"],["scooter","🛴"],["helicopter","🚁"],["ambulance","🚑"],["triangle","🔺"],["diamond","💎"]]}
 );
+
+/* =============================================================
+   NEW LEVELS, batch 3: SPELLING RULES (FLOSS, soft c and g, tch, dge, le endings, tion)
+   A level can have a  rule:"..."  line. It is shown to the child above the question.
+   ============================================================= */
+WORD_LEVELS.push(
+  {name:"FLOSS rule: ff ll ss zz", blanks:2, rule:"FLOSS: after ONE short vowel at the end of a short word, we double f, l, s and z.", words:["puff","bell","miss","buzz","off","hill","doll","dress","grass","glass","class","fluff"]},
+  {name:"tch and dge rule", blanks:3, rule:"After a short vowel we write tch and dge (match, bridge). After a long vowel or a consonant we write ch and ge.", words:["match","catch","patch","fetch","ditch","witch","bridge","badge","fudge","edge","hedge","judge"]},
+  {name:"Soft c: ce ci cy", blanks:2, rule:"The letter c says 's' when e, i or y comes after it.", words:["city","face","race","nice","ice","mice","circle","pencil","dance","fancy","place","cycle"]},
+  {name:"Soft g: ge gi gy", blanks:2, rule:"The letter g can say 'j' when e, i or y comes after it.", words:["giant","giraffe","gem","page","cage","gym","change","orange","huge","stage","ginger","magic"]},
+  {name:"le endings: tle ble ple dle gle", blanks:3, rule:"Many words end in -le, and the sound before it often has a double letter or a consonant.", words:["little","table","apple","bottle","candle","puzzle","bubble","turtle","middle","giggle","castle","circle"]},
+  {name:"tion and sion endings", blanks:3, rule:"The ending -tion says 'shun'. So does -sion in some words.", words:["station","action","mention","nation","vacation","question","addition","fiction","television","decision","invention","position"]}
+);
+
+/* ---- Chapter 2: soft c and g, le endings (group 13) ---- */
+SOUND_GROUPS[13] = [["ce","ice","🧊"],["ci","city","🏙️"],["cy","fancy","🎩"],["gi","giant","🧌"],["ge","giraffe","🦒"],["gy","gym","🏋️"],["ble","table","🍽️"],["dle","candle","🕯️"]];
+
+/* ---- Chapter 4: Picture Quest rule levels 18 to 21 ---- */
+PICTURE_LEVELS.push(
+  {name:"FLOSS words", rule:"FLOSS: we double f, l, s, z after one short vowel (bell, grass).", items:[["bell","🔔"],["doll","🪆"],["hill","⛰️"],["wall","🧱"],["grass","🌱"],["dress","👗"],["glass","🥛"],["cliff","🧗"],["puff","💨"],["buzz","🐝"],["kiss","💋"],["moss","🌿"]]},
+  {name:"tch and dge words", rule:"After a short vowel we write tch and dge.", items:[["witch","🧙"],["match","🔥"],["patch","🧵"],["pitch","⚾"],["ditch","🕳️"],["bridge","🌉"],["badge","🏅"],["fudge","🍫"],["hedge","🌳"],["judge","👩‍⚖️"],["sketch","✏️"],["kitchen","🍳"]]},
+  {name:"Soft c and soft g words", rule:"Soft c says 's' and soft g says 'j' before e, i or y.", items:[["city","🏙️"],["ice","🧊"],["mice","🐭"],["pencil","✏️"],["circle","⭕"],["bicycle","🚲"],["giraffe","🦒"],["giant","🧌"],["gem","💎"],["cage","🐦"],["gym","🏋️"],["orange","🍊"]]},
+  {name:"le ending words", rule:"These words end in -le.", items:[["apple","🍎"],["table","🍽️"],["candle","🕯️"],["bottle","🍼"],["turtle","🐢"],["puzzle","🧩"],["bubble","🫧"],["castle","🏰"],["eagle","🦅"],["needle","🪡"],["whistle","🪈"],["bugle","📯"]]}
+);
+
+/* ---- Chapter 5: Digraph Detective rule levels 6 to 10 ---- */
+DETECTIVE.push(
+  {name:"FLOSS: ff ll ss zz", rule:"FLOSS: we double f, l, s, z after one short vowel.", items:[["ff","puff","💨"],["ff","cliff","🧗"],["ff","sniff","👃"],["ll","bell","🔔"],["ll","doll","🪆"],["ll","hill","⛰️"],["ss","grass","🌱"],["ss","dress","👗"],["ss","kiss","💋"],["zz","buzz","🐝"],["zz","fizz","🥤"],["zz","jazz","🎷"]]},
+  {name:"tch ch dge ge", rule:"After a short vowel use tch or dge. After a long vowel or consonant use ch or ge.", items:[["tch","match","🔥"],["tch","witch","🧙"],["tch","patch","🧵"],["ch","lunch","🍱"],["ch","bench","🪑"],["ch","peach","🍑"],["dge","bridge","🌉"],["dge","badge","🏅"],["dge","fudge","🍫"],["ge","cage","🐦"],["ge","page","📄"],["ge","stage","🎭"]]},
+  {name:"Soft c and soft g: ce ci cy ge gi gy", rule:"c says 's' and g says 'j' before e, i or y.", items:[["ce","face","🙂"],["ce","ice","🧊"],["ce","mice","🐭"],["ci","city","🏙️"],["ci","pencil","✏️"],["ci","circle","⭕"],["cy","fancy","🎩"],["cy","bicycle","🚲"],["ge","cage","🐦"],["ge","orange","🍊"],["gi","giant","🧌"],["gi","giraffe","🦒"],["gy","gym","🏋️"],["gy","energy","⚡"]]},
+  {name:"le endings: tle ble ple dle gle zle", rule:"Words that end in -le: listen for the sound before it.", items:[["tle","turtle","🐢"],["tle","bottle","🍼"],["tle","castle","🏰"],["ble","table","🍽️"],["ble","bubble","🫧"],["ple","apple","🍎"],["ple","people",""],["dle","candle","🕯️"],["dle","needle","🪡"],["gle","giggle","🤭"],["gle","eagle","🦅"],["zle","puzzle","🧩"]]},
+  {name:"tion sion ture ous", rule:"-tion says 'shun', -ture says 'cher'.", items:[["tion","station","🚉"],["tion","action","🎬"],["tion","vacation","🏖️"],["tion","question","❓"],["sion","television","📺"],["sion","vision","👁️"],["ture","picture","🖼️"],["ture","nature","🌿"],["ture","adventure","🗺️"],["ous","famous","🌟"],["ous","nervous","😬"],["ous","dangerous","⚠️"]]}
+);
