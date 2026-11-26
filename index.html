@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Little Explorers Quest</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c9b8ff">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Explorers">
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:"Trebuchet MS","Comic Sans MS",sans-serif;background:linear-gradient(160deg,#ffd9ec,#d9ecff 55%,#fff3c4);min-height:100vh;color:#33265a}
@@ -1319,12 +1326,14 @@ function showGrownUp(){
     <p style="font-size:18px">${rows.length ? rows.map(r=>`<b>${esc(label(r.k))}</b> (missed ${r.miss}, right ${r.ok})`).join(" · ") : "Nothing yet!"}</p>
     <h3>Auto-save file</h3><p style="font-size:18px">${FS.state==="unsupported"?"Not available in this browser. Use Chrome or Edge on the laptop.":FS.state==="ready"?"✅ On. Progress is saved to a file on this computer after every change, so clearing the browser will not lose it.":FS.state==="needs"?"⏸ Paused. Tap the button to turn it back on.":"Not set up yet. Choose a file once (for example in Documents) and progress saves there automatically."}</p>${FS.state==="none"?`<button class="small ok" id="fsPick">💾 Choose auto-save file</button>`:""}${FS.state==="needs"?`<button class="small ok" id="fsOn2">▶ Turn auto-save on</button>`:""}${FS.state==="ready"?`<button class="small ghost" id="fsPick">Change file</button>`:""}
     ${cloudSection()}
+    <h3>📲 Install as an app</h3><p style="font-size:18px">${INSTALL?"Add Little Explorers Quest to this device so it opens in its own window with its own icon.":"On a computer, use the install icon in the address bar of Chrome or Edge. On an iPad or iPhone, tap Share, then Add to Home Screen."}</p>${INSTALL?`<button class="small ok" id="inst">📲 Install now</button>`:""}
     <h3>Backup</h3><p style="font-size:18px">Last backup: <b>${p.lastBackup||"never"}</b>. The home screen reminds you each week.</p><h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
     <div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
     <input type="file" id="file" accept=".json" style="display:none">
     <button class="small alt" id="del">Delete this player</button></div>`, ()=>{
       $("#del").onclick = ()=>{ if(confirm("Delete "+p.name+" and all their progress?")){ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); } };
       $("#exp").onclick = ()=>{ downloadBackup(); showGrownUp(); };
+      const ins = $("#inst"); if(ins) ins.onclick = async()=>{ INSTALL.prompt(); await INSTALL.userChoice; INSTALL = null; showGrownUp(); };
       const ci = $("#cloudIn"); if(ci) ci.onclick = ()=>cloudSignInScreen();
       const cn = $("#cloudNow"); if(cn) cn.onclick = async()=>{ cn.disabled = true; await cloudSync(); showGrownUp(); };
       const co = $("#cloudOut"); if(co) co.onclick = async()=>{ await Cloud.signOut(); showGrownUp(); };
@@ -1344,6 +1353,10 @@ function showGrownUp(){
    START
    ============================================================= */
 if(typeof Cloud!=="undefined" && Cloud.on) Cloud.init().then(async u=>{ if(!u) return; const ch = await cloudSync(); if(ch){ if(P() && document.querySelector("#closet")) home(); else if(!P() && DB.profiles.length) profilesScreen(); } }).catch(()=>{});
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+var INSTALL = null;
+window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); INSTALL = e; });
+window.addEventListener("appinstalled", ()=>{ INSTALL = null; });
 fsInit().then(()=>{ if(DB.profiles.length===0 && FS.handle) createProfile(); else if(FS.state==="needs" && P() && document.querySelector("#closet")) home(); });
 if(DB.profiles.length === 0){ applyTheme(); createProfile(); }
 else if(DB.profiles.length === 1){ DB.current = DB.profiles[0].id; home(); }
