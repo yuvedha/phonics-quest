@@ -106,6 +106,7 @@ body.paused *{animation-play-state:paused !important}
 <script src="content.js"></script>
 <script src="maths.js"></script>
 <script src="reading.js"></script>
+<script src="gk.js"></script>
 <script src="cloud-config.js"></script>
 <script src="cloud.js"></script>
 <script>
@@ -125,7 +126,9 @@ const CH = {
   c5:{icon:"🔍", name:"Digraph Detective", about:"Find the missing digraph in each word.",              max:DETECTIVE.length},
   c6:{icon:"🧪", name:"Digraph Daily Test", about:"A fresh mix of every digraph sound you have learned. Different every day!", max:1, daily:true},
   c8:{icon:"🚀", name:"Reading Rocket", about:"Read fun sentences and tiny stories, then answer a question!", max:READING.length},
-  c7:{icon:"🔢", name:"Maths Magic", about:"Count, add, take away, shapes, time, money and more!", max:MATH_LEVELS.length}
+  c7:{icon:"🔢", name:"Maths Magic", about:"Count, add, take away, shapes, time, money and more!", max:MATH_LEVELS.length},
+  c9:{icon:"🕐", name:"Time Teller", about:"Learn to read the clock, plus days, months and seasons!", max:TIME_LEVELS.length},
+  c10:{icon:"🌍", name:"Wonder World", about:"Fun facts about animals, our bodies, weather, Australia, space and more!", max:WONDER_LEVELS.length}
 };
 const CHS = Object.keys(CH);
 
@@ -692,7 +695,8 @@ const activeChs = p => CHS.filter(ch=>ch!=="c6" || c6Ready(p));
 function todayLevel(p, ch){ return Math.min(p.prog[ch], CH[ch].max); }
 const SUBJECTS = [
   {id:"phonics", icon:"📖", name:"Phonics & Spelling", chs:["c1","c2","c3","c8","c4","c5","c6"]},
-  {id:"maths",   icon:"🔢", name:"Maths",              chs:["c7"]}
+  {id:"maths",   icon:"🔢", name:"Maths",              chs:["c7"]},
+  {id:"gk",      icon:"🌍", name:"General Knowledge",  chs:["c9","c10"]}
 ];
 const subjectOf = ch => (SUBJECTS.find(sj=>sj.chs.includes(ch))||SUBJECTS[0]).id;
 function subjectScreen(id){
@@ -1226,21 +1230,22 @@ RUN.c6 = ()=>{
 /* =============================================================
    CHAPTER 7: MATHS MAGIC (questions are generated fresh from maths.js)
    ============================================================= */
-MENU.c7 = ()=>levelMenu("c7", MATH_LEVELS.map(l=>l.name));
-RUN.c7 = level=>{
-  const L = MATH_LEVELS[level-1], N = 10;
-  const weak = L.gens.filter(g=>isWeak("m:"+g[0]));
+function genChapter(ch, LEVELS, GEN, pre){
+MENU[ch] = ()=>levelMenu(ch, LEVELS.map(l=>l.name));
+RUN[ch] = level=>{
+  const L = LEVELS[level-1], N = L.n || 10;
+  const weak = L.gens.filter(g=>isWeak(pre+g[0]));
   const order = []; let cyc = [];
   for(let i=0;i<N;i++){
     if(!cyc.length) cyc = shuffle(L.gens);
     order.push((i<2 && weak.length) ? pick(weak,1)[0] : cyc.pop());
   }
   const qs = []; 
-  order.forEach(g=>{ let q, t = 0; do{ q = MATH_GEN[g[0]](...g.slice(1)); t++; }while(qs.some(o=>o.q===q.q) && t<8); q.key = g[0]; qs.push(q); });
+  order.forEach(g=>{ let q, t = 0; do{ q = GEN[g[0]](...g.slice(1)); t++; }while(qs.some(o=>o.q===q.q) && t<30); q.key = q.key || g[0]; qs.push(q); });
   const run = {pts:0, first:0};
   let i = 0;
   function ask(){
-    if(i >= qs.length) return finishScreen("c7", level, run, run.first/qs.length, 0.8, 0.5);
+    if(i >= qs.length) return finishScreen(ch, level, run, run.first/qs.length, 0.8, 0.5);
     const x = qs[i]; let attempts = 0, done = false, typed = "", wrongOpts = [];
     function draw(msg, cls){
       const body = x.type==="num"
@@ -1262,11 +1267,11 @@ RUN.c7 = level=>{
     }
     function press(n){ if(done || typed.length>=3) return; typed += n; draw(); }
     function right(){
-      done = true; const pts = attempts===0?8:attempts===1?4:2; if(attempts===0){ run.first++; stat("m:"+x.key).ok++; }
+      done = true; const pts = attempts===0?8:attempts===1?4:2; if(attempts===0){ run.first++; stat(pre+x.key).ok++; }
       run.pts += pts; addPoints(pts); sndGood(); draw(`Yes! ${x.why||""} +${pts} ⭐`, "good-t"); later(()=>{ i++; ask(); }, 1600);
     }
     function wrong(giveUp){
-      attempts++; sndBad(); if(attempts===1) stat("m:"+x.key).miss++;
+      attempts++; sndBad(); if(attempts===1) stat(pre+x.key).miss++;
       if(giveUp){ done = true; draw(`The answer is ${x.ans}. ${x.why||""}`, "bad-t"); later(()=>{ i++; ask(); }, 3000); }
       else { typed = ""; draw("Not quite. Have another go!", "bad-t"); }
     }
@@ -1276,6 +1281,10 @@ RUN.c7 = level=>{
   }
   ask();
 };
+}
+genChapter("c7", MATH_LEVELS, MATH_GEN, "m:");
+genChapter("c9", TIME_LEVELS, TIME_GEN, "t:");
+genChapter("c10", WONDER_LEVELS, WONDER_GEN, "k:");
 
 /* =============================================================
    CHAPTER 8: READING ROCKET (sentences and mini stories matched to the phonics so far)
@@ -1473,6 +1482,8 @@ function cloudSection(){
 const MATH_LABEL = {count:"Counting",nextnum:"Number after",prevnum:"Number before",between:"Number between",add:"Adding",sub:"Taking away",bond:"Number bonds",missing:"Missing numbers",skip:"Skip counting",tensones:"Tens and ones",tens:"Tens and ones",bigger:"Bigger and smaller",symbol:"More, less, equal signs",oddeven:"Odd and even",double:"Doubles",half:"Halves",shape2:"2D shapes",sides:"Sides of shapes",shape3:"3D shapes",clock:"Telling the time",money:"Money",fraction:"Fractions",quarter:"Quarters",add2:"Adding bigger numbers",sub2:"Taking away bigger numbers",measure:"Length and weight",day:"Days of the week",month:"Months",story:"Word problems",groups:"Groups",pattern:"Patterns",numpat:"Number patterns",ordinal:"1st, 2nd, 3rd",chart:"Charts"};
 function statLabel(k){
   if(/^m:/.test(k)) return "Maths: "+(MATH_LABEL[k.slice(2)]||k.slice(2));
+  if(/^t:/.test(k)) return "Time: "+(TIME_LABEL[k.slice(2)]||k.slice(2));
+  if(/^k:/.test(k)) return "Facts: "+k.slice(2);
   if(/^[wdpx]:/.test(k)) return k.slice(2);
   const a = k.split(":"); return "sound “"+a[1]+"” ("+a[2]+")";
 }
@@ -1498,7 +1509,7 @@ function reportScreen(){
   const items = Object.entries(p.stats).map(([k,v])=>({k, ...v}));
   const weak = items.filter(r=>r.miss>r.ok || r.miss>=2).sort((a,b)=>(b.miss-b.ok)-(a.miss-a.ok)).slice(0,12);
   const mastered = items.filter(r=>r.ok>=2 && r.ok>=r.miss*2).length;
-  const weakWords = weak.filter(r=>/^[wxpd]:/.test(r.k)), weakSounds = weak.filter(r=>/^s:/.test(r.k)||(!/^[wxpdm]:/.test(r.k))), weakMaths = weak.filter(r=>/^m:/.test(r.k));
+  const weakWords = weak.filter(r=>/^[wxpd]:/.test(r.k)), weakSounds = weak.filter(r=>/^s:/.test(r.k)||(!/^[wxpdmtk]:/.test(r.k))), weakMaths = weak.filter(r=>/^m:/.test(r.k));
   // suggestions
   const tips = [];
   const lastDay = days.length ? days[days.length-1] : "";
@@ -1511,6 +1522,8 @@ function reportScreen(){
   if(weakWords.length) tips.push(`✏️ Practise these words together on paper or out loud: <b>${weakWords.slice(0,6).map(r=>esc(statLabel(r.k))).join(", ")}</b>. Look, say, cover, write, check.`);
   if(weakSounds.length) tips.push(`🔊 Sounds to revisit: <b>${weakSounds.slice(0,5).map(r=>esc(statLabel(r.k))).join(", ")}</b>. Replay the Say the Sounds chapter or the matching Digraph Lesson.`);
   if(weakMaths.length) tips.push(`🔢 Maths to revisit: <b>${weakMaths.slice(0,4).map(r=>esc(statLabel(r.k).replace("Maths: ",""))).join(", ")}</b>. Use real things at home, like counting toast or coins.`);
+  const weakGK = weak.filter(r=>/^[tk]:/.test(r.k));
+  if(weakGK.length) tips.push(`🌍 General knowledge to revisit: <b>${weakGK.slice(0,4).map(r=>esc(statLabel(r.k).replace(/^(Time|Facts): /,""))).join(", ")}</b>. Talk about these in everyday life, like reading the kitchen clock together.`);
   const strongs = chs.filter(c=>c.tag==="strong");
   strongs.forEach(c=>{ if(!c.daily && p.prog[c.ch] < CH[c.ch].max) tips.push(`🚀 ${CH[c.ch].icon} <b>${CH[c.ch].name}</b> is going really well. Let her keep moving up, or do two levels a day to go faster.`); });
   const notStarted = chs.filter(c=>c.tag==="new" && !c.daily);
