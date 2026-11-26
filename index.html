@@ -1282,14 +1282,15 @@ function matchSentence(text, spoken){
 }
 let sRecog = null;
 function stopSentence(){ try{ if(sRecog){ sRecog.onresult=sRecog.onerror=sRecog.onend=sRecog.onstart=null; sRecog.abort(); } }catch(e){} sRecog = null; }
-function listenSentence(onText, onDone, onFail, onStart){
+function listenSentence(onText, onDone, onFail, onStart, isComplete){
   stopSentence(); let finished = false, text = "", idle = null, hard = null;
   const finish = ()=>{ if(finished) return; finished = true; clearTimeout(idle); clearTimeout(hard); try{ sRecog && sRecog.stop(); }catch(e){} onDone(text.trim()); };
   const fail = c=>{ if(finished) return; finished = true; clearTimeout(idle); clearTimeout(hard); onFail(c); };
   try{
     sRecog = new SR(); sRecog.lang = "en-AU"; sRecog.interimResults = true; sRecog.continuous = true; sRecog.maxAlternatives = 1;
     sRecog.onstart = ()=>{ if(onStart) onStart(); hard = setTimeout(finish, 45000); };
-    sRecog.onresult = e=>{ text = [...e.results].map(r=>r[0].transcript).join(" "); onText(text); clearTimeout(idle); idle = setTimeout(finish, 3000); };
+    sRecog.onresult = e=>{ text = [...e.results].map(r=>r[0].transcript).join(" "); onText(text); clearTimeout(idle);
+      idle = setTimeout(finish, (isComplete && isComplete(text)) ? 900 : 3500); };
     sRecog.onerror = e=>{ if(e.error==="no-speech" && text) return finish(); fail(e.error || "error"); };
     sRecog.onend = ()=>{ text ? finish() : fail("no-speech"); };
     sRecog.start();
@@ -1349,7 +1350,8 @@ RUN.c8 = level=>{
               if(m.ratio >= 0.8){ out.innerHTML = `<span class="good-t">🌟 Great reading!</span>`; const pts = helped?3:6; run.pts += pts; addPoints(pts); sndGood(); later(()=>check(helped, true), 1200); }
               else { mb.disabled = false; out.innerHTML = `<span class="bad-t">Nearly! The pink words need another go. Tap the microphone and try again.</span>`; setMood("oops"); } },
             err=>{ mb.disabled = false; out.innerHTML = `<span class="bad-t">${esc(micMessage(err))}</span>`; },
-            ()=>{ out.innerHTML = `🎧 I'm listening… read the sentence! <button class="small" id="mdone">I'm done</button>`; const d = $("#mdone"); if(d) d.onclick = ()=>stop && stop(); });
+            ()=>{ out.innerHTML = `🎧 I'm listening… read the sentence! <button class="small" id="mdone">I'm done</button>`; const d = $("#mdone"); if(d) d.onclick = ()=>stop && stop(); },
+            txt=>{ const m = matchSentence(t, txt); return m.ratio>=0.8 && m.ok[m.ok.length-1]; });
         };
         $("#hear").onclick = ()=>{ helped = true; speak(t); };
         $("#slow").onclick = ()=>{ helped = true; const ws = $$(".rw"); ws.forEach((el,j)=>later(()=>{ ws.forEach(x=>x.classList.remove("on")); el.classList.add("on"); if(el.dataset.w) speak(el.dataset.w); }, j*1000)); later(()=>ws.forEach(x=>x.classList.remove("on")), ws.length*1000); };
