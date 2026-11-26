@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Phonics Quest</title>
+<title>Little Explorers Quest</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:"Trebuchet MS","Comic Sans MS",sans-serif;background:linear-gradient(160deg,#ffd9ec,#d9ecff 55%,#fff3c4);min-height:100vh;color:#33265a}
@@ -406,7 +406,7 @@ function needBackup(p){
 function downloadBackup(){
   const p = P(); p.lastBackup = todayStr(); saveDB();
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:"application/json"}));
-  a.download = "phonics-quest-backup-"+todayStr()+".json"; a.click();
+  a.download = "little-explorers-backup-"+todayStr()+".json"; a.click();
 }
 
 /* ---- Auto-save progress to a file on the computer (Chrome / Edge). Keeps progress outside the browser. ---- */
@@ -421,7 +421,7 @@ async function fsInit(){
   if(FS.state==="ready") fsWrite();
 }
 async function fsPick(){
-  try{ const h = await showSaveFilePicker({suggestedName:"phonics-quest-progress.json", types:[{description:"Phonics Quest progress", accept:{"application/json":[".json"]}}]});
+  try{ const h = await showSaveFilePicker({suggestedName:"little-explorers-progress.json", types:[{description:"Little Explorers Quest progress", accept:{"application/json":[".json"]}}]});
     FS.handle = h; await idb("readwrite", st=>st.put(h,"file")); FS.state = "ready"; FS.last = ""; await fsWrite(); return true; }catch(e){ return false; }
 }
 async function fsAllow(){
@@ -557,7 +557,7 @@ function askPin(msg){ const v = prompt(msg || "Grown-up PIN:"); return v!==null 
    ============================================================= */
 function profilesScreen(){
   DB.current = null; applyTheme();
-  view(`<div class="card"><h1>🌈 Phonics Quest</h1><p style="font-size:22px">Who is playing?</p>
+  view(`<div class="card"><h1>🌈 Little Explorers Quest</h1><p style="font-size:22px">Who is playing?</p>
     <div class="row">${DB.profiles.map(p=>`<button class="ghost" data-id="${p.id}" style="padding:10px">${avatarSVG(p,100)}<div>${esc(p.name)}</div></button>`).join("")}</div>
     <button class="ok" id="newP">➕ New player</button></div>`, ()=>{
       $$("[data-id]").forEach(b=>b.onclick=()=>{ DB.current = b.dataset.id; saveDB(); applyTheme(); home(); });
@@ -1217,7 +1217,7 @@ function showGrownUp(){
       $("#file").onchange = e=>{
         const f = e.target.files[0]; if(!f) return;
         const r = new FileReader();
-        r.onload = ()=>{ try{ const d = JSON.parse(r.result); if(!d.profiles) throw 0; d.profiles.forEach(ensure); DB = d; saveDB(); alert("Backup restored!"); profilesScreen(); }catch(err){ alert("That file doesn't look like a Phonics Quest backup."); } };
+        r.onload = ()=>{ try{ const d = JSON.parse(r.result); if(!d.profiles) throw 0; d.profiles.forEach(ensure); DB = d; saveDB(); alert("Backup restored!"); profilesScreen(); }catch(err){ alert("That file doesn't look like a Little Explorers Quest backup."); } };
         r.readAsText(f);
       };
     });

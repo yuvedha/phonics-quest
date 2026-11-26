@@ -1,5 +1,5 @@
 /* =============================================================
-   PHONICS QUEST: LESSON CONTENT
+   LITTLE EXPLORERS QUEST: LESSON CONTENT
    Everything the child learns lives in this file. The game code is in index.html.
    To add levels, scroll to "NEW LEVELS" at the bottom and add more entries.
    Levels unlock in order, so ALWAYS add new levels at the END of a list.

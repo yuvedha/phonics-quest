@@ -1,4 +1,4 @@
-# Phonics Quest
+# Little Explorers Quest (the phonics chapters are the first subject)
 
 A fun phonics game for early readers: sight words, digraph lessons, picture quests,
 daily levels, and a dress-up avatar earned with points.
