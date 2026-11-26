@@ -89,7 +89,8 @@ const CH = {
   c2:{icon:"🎤", name:"Say the Sounds",    about:"Look at the letters and say the sound out loud.",     max:Object.keys(SOUND_GROUPS).length},
   c3:{icon:"📗", name:"Digraph Lessons",   about:"Learn every sound a digraph can make, then spell the words.", max:LESSONS.length},
   c4:{icon:"🖼️", name:"Picture Quest",     about:"See the picture. Say the word, then spell it!",       max:PICTURE_LEVELS.length},
-  c5:{icon:"🔍", name:"Digraph Detective", about:"Find the missing digraph in each word.",              max:DETECTIVE.length}
+  c5:{icon:"🔍", name:"Digraph Detective", about:"Find the missing digraph in each word.",              max:DETECTIVE.length},
+  c6:{icon:"🧪", name:"Digraph Daily Test", about:"A fresh mix of every digraph sound you have learned. Different every day!", max:1, daily:true}
 };
 const CHS = Object.keys(CH);
 
@@ -378,6 +379,7 @@ function ensure(p){
   p.stats = p.stats || {}; p.done = p.done || {};
   p.prog = p.prog || {};
   CHS.forEach(k=>{ p.done[k] = p.done[k] || {}; p.prog[k] = p.prog[k] || 1; });
+  p.c6 = p.c6 || {seen:{}, recent:[], count:0};
   p.daily = p.daily || {date:"", chapters:[], count:0};
   p.streak = p.streak || {last:"", n:0};
   p.points = p.points || 0;
@@ -605,6 +607,8 @@ function createProfile(){
 /* =============================================================
    HOME + DAILY QUEST
    ============================================================= */
+const c6Ready = p => Object.keys(p.done.c3||{}).some(k=>p.done.c3[k]>=1);
+const activeChs = p => CHS.filter(ch=>ch!=="c6" || c6Ready(p));
 function todayLevel(p, ch){ return Math.min(p.prog[ch], CH[ch].max); }
 function home(){
   backTo = null;
@@ -628,9 +632,10 @@ function home(){
       <p style="text-align:center;font-size:18px;margin-top:0">Finish at least one level today. Do more for bonus stars!</p>
       ${CHS.map(ch=>{
         const lv = todayLevel(p,ch), done = d.chapters.includes(ch), st = p.done[ch][lv]||0;
+        if(ch==="c6" && !c6Ready(p)) return `<div class="card ch" style="margin:8px 0;padding:12px;opacity:.7"><div><h3>${CH[ch].icon} ${CH[ch].name} 🔒</h3><div style="font-size:16px">Finish a Digraph Lesson (Chapter 3) to unlock the daily test.</div></div></div>`;
         return `<div class="card ch ${done?"":"today"}" style="margin:8px 0;padding:12px"><div><h3>${CH[ch].icon} ${CH[ch].name} ${done?"✅":""}</h3>
-          <div style="font-size:16px">${CH[ch].about}</div><div style="font-size:18px"><b>Today: Level ${lv}</b> ${"⭐".repeat(st)}</div></div>
-          <div style="text-align:center"><button class="ok" data-play="${ch}">${done?"Again":"Play"} ▶</button><br><button class="small ghost" data-menu="${ch}">All levels</button></div></div>`;
+          <div style="font-size:16px">${CH[ch].about}</div><div style="font-size:18px"><b>${CH[ch].daily?"Today's test":"Today: Level "+lv}</b> ${"⭐".repeat(st)}</div></div>
+          <div style="text-align:center"><button class="ok" data-play="${ch}">${done?"Again":"Play"} ▶</button>${CH[ch].daily?"":`<br><button class="small ghost" data-menu="${ch}">All levels</button>`}</div></div>`;
       }).join("")}
     </div>
     <div class="row"><button class="small ghost" id="switch">👥 Switch player</button><button class="small ghost" id="grown">👩‍👧 Grown-up corner</button></div>
@@ -709,8 +714,9 @@ function recordLevelDone(ch, level, stars){
     p.streak.n = (p.streak.last===yesterdayStr()) ? p.streak.n+1 : 1; p.streak.last = d;
     addPoints(CONFIG.dailyBonus); notes.push(`🎯 Daily goal done! +${CONFIG.dailyBonus} ⭐  🔥 ${p.streak.n} day${p.streak.n>1?"s":""} in a row`);
   }
-  if(p.daily.chapters.length === CHS.length && !p.daily.allBonus){ p.daily.allBonus = true; addPoints(CONFIG.allChaptersBonus); notes.push(`🌟 Every chapter done today! +${CONFIG.allChaptersBonus} ⭐`); }
-  if(level === p.prog[ch] && stars >= 2 && p.prog[ch] < CH[ch].max){ p.prog[ch]++; notes.push(`🔓 Level ${p.prog[ch]} unlocked in ${CH[ch].name}!`); }
+  if(activeChs(p).every(c=>p.daily.chapters.includes(c)) && !p.daily.allBonus){ p.daily.allBonus = true; addPoints(CONFIG.allChaptersBonus); notes.push(`🌟 Every chapter done today! +${CONFIG.allChaptersBonus} ⭐`); }
+  if(CH[ch].daily){ /* daily test: no levels to unlock */ }
+  else if(level === p.prog[ch] && stars >= 2 && p.prog[ch] < CH[ch].max){ p.prog[ch]++; notes.push(`🔓 Level ${p.prog[ch]} unlocked in ${CH[ch].name}!`); }
   else if(level === p.prog[ch] && stars < 2) notes.push(`Try level ${level} again to unlock the next one. You can do it!`);
   saveDB(); return notes;
 }
@@ -1039,6 +1045,89 @@ RUN.c3 = level=>{
 };
 
 /* =============================================================
+   CHAPTER 6: DIGRAPH DAILY TEST (revisits every sound learned in Chapter 3)
+   Each day it picks the sounds tested least recently (and any she finds hard),
+   asks which sound the digraph makes, then spells a few of the words.
+   ============================================================= */
+MENU.c6 = ()=>home();
+RUN.c6 = ()=>{
+  const p = P(); p.c6 = p.c6 || {seen:{}, recent:[], count:0};
+  const lessons = LESSONS.map((L,i)=>({L,i})).filter(x=>(p.done.c3[x.i+1]||0)>=1);
+  if(!lessons.length) return home();
+  const pairs = lessons.flatMap(({L})=>L.sounds.map((sd,si)=>({L, si, key:L.dg+":"+si})));
+  const isHard = x => x.L.sounds[x.si].words.some(([w])=>isWeak("x:"+w));
+  const order = shuffle(pairs).map(x=>({x, t: isHard(x) ? "" : (p.c6.seen[x.key]||"")})).sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0).map(o=>o.x);
+  const chosen = order.slice(0, Math.min(8, order.length));
+  const used = new Set(), qs = [];
+  for(let i=0; qs.length<8 && i<40; i++){
+    const x = chosen[i % chosen.length], ws = x.L.sounds[x.si].words.filter(([w])=>!used.has(w));
+    if(!ws.length){ if(i>=chosen.length*3) break; continue; }
+    const fresh = ws.filter(([w])=>!p.c6.recent.includes(w)), src = fresh.length ? fresh : ws;
+    const [w,e] = pick(src,1)[0]; used.add(w); qs.push({w, e, L:x.L, si:x.si, key:x.key});
+  }
+  const sortQs = shuffle(qs);
+  const spellQs = shuffle(qs.filter(q=>q.e)).concat(shuffle(qs.filter(q=>!q.e))).slice(0, Math.min(4, qs.length));
+  const run = {pts:0, sortFirst:0, spellFirst:0};
+  const mark = q=>{ p.c6.seen[q.key] = todayStr(); p.c6.recent.push(q.w); if(p.c6.recent.length>80) p.c6.recent.shift(); };
+
+  function intro(){
+    const dgs = [...new Set(chosen.map(x=>x.L.dg))];
+    view(`<div class="card"><h1>🧪 Digraph Daily Test</h1>
+      <p style="font-size:22px">Today we practise these digraphs. Which sound do they make?</p>
+      <div>${dgs.map(d=>`<span class="dgname" style="margin:0 10px">“${d}”</span>`).join("")}</div>
+      <p style="font-size:18px">${sortQs.length} listening questions, then ${spellQs.length} spelling words.</p>
+      <button class="ok" id="go">Start ▶</button></div>`, ()=>{ $("#go").onclick = sort; });
+  }
+  function sort(){
+    let i = 0;
+    function q(){
+      if(i >= sortQs.length) return spell();
+      const x = sortQs[i], L = x.L; let attempts = 0, done = false, wrongSet = [];
+      function draw(msg, cls){
+        view(`<div class="card"><h2>🧪 Which sound? ${i+1}/${sortQs.length}</h2>
+          <div class="bar"><div style="width:${i/sortQs.length*100}%"></div></div>
+          ${x.e?`<div class="big">${x.e}</div>`:""}
+          <div class="giant" style="font-size:64px;color:#33265a;margin:6px">${hlWord(L,x.w)}</div>
+          <button id="say">🔊 Hear the word</button>
+          <p style="font-size:20px;margin:6px">What sound does <span class="dgname" style="font-size:30px">“${L.dg}”</span> make here?</p>
+          <div class="msg ${cls||""}">${msg||""}</div>
+          <div class="row">${L.sounds.map((sd,k)=>`<button class="ghost" style="font-size:22px" data-s="${k}" ${done||wrongSet.includes(k)?"disabled":""}>${sd.keyPic} ${sd.say}</button>`).join("")}</div></div>`, ()=>{
+            $("#say").onclick = ()=>speak(x.w);
+            $$("[data-s]").forEach(b=>b.onclick=()=>choose(+b.dataset.s));
+          });
+      }
+      function choose(k){
+        if(done) return;
+        if(k === x.si){
+          done = true; const pts = attempts===0?8:attempts===1?4:2; if(attempts===0){ run.sortFirst++; stat("x:"+x.w).ok++; }
+          mark(x); run.pts += pts; addPoints(pts); sndGood(); speak(x.w);
+          draw(`Yes! ${L.dg} says “${L.sounds[x.si].say}” in ${x.w}. +${pts} ⭐`, "good-t"); later(()=>{ i++; q(); }, 1700);
+        } else {
+          attempts++; wrongSet.push(k); sndBad(); if(attempts===1) stat("x:"+x.w).miss++;
+          if(attempts >= L.sounds.length-1 || attempts>=3){ done = true; mark(x); draw(`In ${x.w}, ${L.dg} says “${L.sounds[x.si].say}”.`, "bad-t"); speak(x.w); later(()=>{ i++; q(); }, 2600); }
+          else { draw("Not quite. Listen again and try!", "bad-t"); speak(x.w); }
+        }
+      }
+      draw(); later(()=>speak(x.w), 250);
+    }
+    q();
+  }
+  function spell(){
+    let i = 0;
+    function q(){
+      if(i >= spellQs.length){ p.c6.count = (p.c6.count||0)+1; return finishScreen("c6", 1, run, (run.sortFirst/sortQs.length*0.6 + run.spellFirst/spellQs.length*0.4), 0.8, 0.5); }
+      const x = spellQs[i], sd = x.L.sounds[x.si];
+      spellStep({word:x.w, emoji:x.e, title:`✏️ Spell it ${i+1}/${spellQs.length}`, progress:i/spellQs.length, hint:`Listen for <b class="hl">${x.L.dg}</b> (${sd.say})`}, r=>{
+        const pts = spellPoints(r, 10); if(r.mistakes===0){ run.spellFirst++; stat("x:"+x.w).ok++; } else stat("x:"+x.w).miss++;
+        run.pts += pts; addPoints(pts); i++; q();
+      });
+    }
+    q();
+  }
+  intro();
+};
+
+/* =============================================================
    CHAPTER 4: PICTURE QUEST (see it, say it, spell it)
    ============================================================= */
 MENU.c4 = ()=>levelMenu("c4", PICTURE_LEVELS.map(l=>l.name));
@@ -1112,7 +1201,7 @@ function showGrownUp(){
   const rows = Object.entries(p.stats).map(([k,v])=>({k, ...v})).filter(r=>r.miss>0).sort((a,b)=>b.miss-a.miss);
   const label = k => /^[wdpx]:/.test(k) ? k.slice(2) : "sound “"+k.split(":")[1]+"” ("+k.split(":")[2]+")";
     view(`<div class="card" style="text-align:left"><h2>👩‍👧 Grown-up corner: ${esc(p.name)}</h2>
-    <h3>Levels reached</h3><p style="font-size:18px">${CHS.map(ch=>`${CH[ch].icon} ${CH[ch].name}: level ${todayLevel(p,ch)} of ${CH[ch].max}`).join("<br>")}</p>
+    <h3>Levels reached</h3><p style="font-size:18px">${CHS.map(ch=>`${CH[ch].icon} ${CH[ch].name}: ${CH[ch].daily?"times finished "+(p.c6&&p.c6.count||0):"level "+todayLevel(p,ch)+" of "+CH[ch].max}`).join("<br>")}</p>
     <h3>Needs more practice</h3>
     <p style="font-size:18px">${rows.length ? rows.map(r=>`<b>${esc(label(r.k))}</b> (missed ${r.miss}, right ${r.ok})`).join(" · ") : "Nothing yet!"}</p>
     <h3>Auto-save file</h3><p style="font-size:18px">${FS.state==="unsupported"?"Not available in this browser. Use Chrome or Edge on the laptop.":FS.state==="ready"?"✅ On. Progress is saved to a file on this computer after every change, so clearing the browser will not lose it.":FS.state==="needs"?"⏸ Paused. Tap the button to turn it back on.":"Not set up yet. Choose a file once (for example in Documents) and progress saves there automatically."}</p>${FS.state==="none"?`<button class="small ok" id="fsPick">💾 Choose auto-save file</button>`:""}${FS.state==="needs"?`<button class="small ok" id="fsOn2">▶ Turn auto-save on</button>`:""}${FS.state==="ready"?`<button class="small ghost" id="fsPick">Change file</button>`:""}
