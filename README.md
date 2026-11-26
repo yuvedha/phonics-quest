@@ -21,3 +21,4 @@ reminds you once a week.
 Levels can carry a `rule:"..."` line that is shown to the child (FLOSS, soft c and g, tch/dge, -le, -tion).
 - **Digraph Daily Test** (Chapter 6): each day revisits the sounds from completed Chapter 3 lessons, picking those tested least recently or found hard.
 - **Maths Magic** (Chapter 7): Year 1 and 2 maths in `maths.js`, with questions generated fresh each time (counting, add and take away, number bonds, skip counting, place value, shapes, time, money, fractions, patterns, word problems). Add levels at the END of `MATH_LEVELS`.
+- **Cloud progress** (optional): follow `SETUP-CLOUD.md`, then fill in `cloud-config.js`. `cloud.js` talks to Firebase only when configured.

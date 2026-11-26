@@ -82,6 +82,8 @@ body.paused *{animation-play-state:paused !important}
 <div id="app"></div>
 <script src="content.js"></script>
 <script src="maths.js"></script>
+<script src="cloud-config.js"></script>
+<script src="cloud.js"></script>
 <script>
 /* =============================================================
    SETTINGS (edit these)
@@ -373,7 +375,8 @@ function loadDB(){
   try{ const d = JSON.parse(localStorage.getItem("phonicsQuestSave")); if(d && d.profiles){ d.profiles.forEach(ensure); return d; } }catch(e){}
   return {profiles:[], current:null};
 }
-function saveDB(){ try{ localStorage.setItem("phonicsQuestSave", JSON.stringify(DB)); }catch(e){} try{ scheduleFileSave(); }catch(e){} }
+function persist(){ try{ localStorage.setItem("phonicsQuestSave", JSON.stringify(DB)); }catch(e){} try{ scheduleFileSave(); }catch(e){} }
+function saveDB(){ try{ const cp = P(); if(cp) cp.upd = Date.now(); }catch(e){} persist(); try{ scheduleCloud(); }catch(e){} }
 function ensure(p){
   p.avatar = Object.assign({}, AV_DEFAULT, p.avatar||{});
   p.owned = p.owned || ["bg0"];
@@ -444,6 +447,48 @@ function scheduleFileSave(){ if(FS.state!=="ready") return; clearTimeout(FS.time
 async function fsRestore(){
   try{ if(FS.state!=="ready") await fsAllow(); const f = await FS.handle.getFile(), d = JSON.parse(await f.text());
     if(!d.profiles || !d.profiles.length) throw 0; d.profiles.forEach(ensure); DB = d; saveDB(); profilesScreen(); return true; }catch(e){ alert("Couldn't read the auto-save file."); return false; }
+}
+/* ---- Cloud sync (see SETUP-CLOUD.md). Newest copy of each profile wins; profiles from other devices are added. ---- */
+var CS = {timer:null, last:0, busy:false, msg:""};
+function mergeDB(r){
+  if(!r || !r.profiles) return false; let changed = false;
+  r.profiles.forEach(rp=>{
+    const lp = DB.profiles.find(x=>x.id===rp.id);
+    if(!lp){ ensure(rp); DB.profiles.push(rp); changed = true; }
+    else if((rp.upd||0) > (lp.upd||0)){ ensure(rp); Object.assign(lp, rp); changed = true; }
+  });
+  if(changed && !DB.current && DB.profiles.length===1) DB.current = DB.profiles[0].id;
+  return changed;
+}
+async function cloudSync(){
+  if(typeof Cloud==="undefined" || !Cloud.on || !Cloud.user() || CS.busy) return false;
+  CS.busy = true;
+  try{
+    const r = await Cloud.pull(); if(!r.ok){ CS.msg = r.error; return false; }
+    const changed = mergeDB(r.value); if(changed) persist();
+    const w = await Cloud.push(DB); if(!w.ok){ CS.msg = w.error; return false; }
+    CS.last = Date.now(); CS.msg = ""; return changed;
+  } finally { CS.busy = false; }
+}
+function scheduleCloud(){
+  if(typeof Cloud==="undefined" || !Cloud.on || !Cloud.user()) return;
+  clearTimeout(CS.timer); CS.timer = setTimeout(()=>{ cloudSync(); }, 8000);
+}
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden && typeof Cloud!=="undefined" && Cloud.user()){ clearTimeout(CS.timer); cloudSync(); } });
+function cloudSignInScreen(msg){
+  view(`<div class="card"><h2>☁️ Sign in to get my progress</h2>
+    <p style="font-size:18px">Use the grown-up's email and password for Little Explorers Quest.</p>
+    <p><input type="email" id="cem" placeholder="Email" autocomplete="username" style="width:min(320px,90%)"></p>
+    <p><input type="password" id="cpw" placeholder="Password (6+ characters)" autocomplete="current-password" style="width:min(320px,90%)"></p>
+    <div class="msg bad-t">${msg||""}</div>
+    <div><button class="ok" id="cin">Sign in</button><button class="ghost" id="cup">Create account</button><button class="ghost" id="cback">Back</button></div></div>`, ()=>{
+    const go = async fn=>{ const e=$("#cem").value.trim(), p=$("#cpw").value; if(!e||!p) return cloudSignInScreen("Please type your email and password.");
+      $("#cin").disabled = $("#cup").disabled = true; const r = await fn(e,p);
+      if(!r.ok) return cloudSignInScreen(r.error);
+      await cloudSync(); DB.profiles.length ? (DB.profiles.length===1 ? (DB.current=DB.profiles[0].id, home()) : profilesScreen()) : createProfile(); };
+    $("#cin").onclick = ()=>go(Cloud.signIn); $("#cup").onclick = ()=>go(Cloud.signUp);
+    $("#cback").onclick = ()=> DB.profiles.length ? profilesScreen() : createProfile();
+  }, {bare:true});
 }
 function dailyNow(p){ return p.daily.date===todayStr() ? p.daily : {date:todayStr(), chapters:[], count:0}; }
 
@@ -597,7 +642,8 @@ function createProfile(){
       <div class="closet"><div class="prev" id="prev">${avatarSVG({avatar:draft.avatar, equipped:{bg:"bg0"}}, 250)}</div>
       <div class="opts" style="text-align:left"><p style="margin:0 0 8px;text-align:center"><input type="text" id="nm" maxlength="14" placeholder="Your name" value="${esc(draft.name)}"></p>
       ${lookEditor(draft.avatar)}<hr style="border:none;border-top:3px dotted #ead9ff">${clothesEditor(draft.avatar)}</div></div>
-      <div><button class="ok" id="go">Let's play! ▶</button>${DB.profiles.length?`<button class="ghost" id="cancel">Back</button>`:""}${(!DB.profiles.length && FS.handle)?`<div><button class="small alt" id="fsRest">📂 Restore from my auto-save file</button></div>`:""}</div></div>`, ()=>{
+      <div><button class="ok" id="go">Let's play! ▶</button>${DB.profiles.length?`<button class="ghost" id="cancel">Back</button>`:""}${(!DB.profiles.length && FS.handle)?`<div><button class="small alt" id="fsRest">📂 Restore from my auto-save file</button></div>`:""}${(typeof Cloud!=="undefined" && Cloud.on && !Cloud.user())?`<div><button class="small alt" id="cloudFirst">☁️ Sign in to get my progress</button></div>`:""}</div></div>`, ()=>{
+        const cf = $("#cloudFirst"); if(cf) cf.onclick = ()=>cloudSignInScreen();
         const fr = $("#fsRest"); if(fr) fr.onclick = fsRestore;
         $("#nm").oninput = e=>{ draft.name = e.target.value; };
         bindBasics(draft.avatar, ()=>{ draft.name = $("#nm").value; const y=window.scrollY; draw(); window.scrollTo(0,y); });
@@ -1258,6 +1304,11 @@ RUN.c5 = level=>{
    GROWN-UP CORNER
    ============================================================= */
 function grownUp(){ if(!askPin()) return; showGrownUp(); }
+function cloudSection(){
+  if(typeof Cloud==="undefined" || !Cloud.on) return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">Not turned on. It would let progress follow her to other devices. See SETUP-CLOUD.md in the project to switch it on.</p>`;
+  if(!Cloud.user()) return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">Not signed in.</p><button class="small ok" id="cloudIn">Sign in or create account</button>`;
+  return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">✅ Signed in as <b>${esc(Cloud.email())}</b>. ${CS.last?"Last synced "+new Date(CS.last).toLocaleTimeString():"Not synced yet this visit."}${CS.msg?`<br><span style="color:#c2233f">${esc(CS.msg)}</span>`:""}</p><button class="small ok" id="cloudNow">🔄 Sync now</button><button class="small ghost" id="cloudOut">Sign out</button>`;
+}
 function showGrownUp(){
   const p = P();
   const rows = Object.entries(p.stats).map(([k,v])=>({k, ...v})).filter(r=>r.miss>0).sort((a,b)=>b.miss-a.miss);
@@ -1267,12 +1318,16 @@ function showGrownUp(){
     <h3>Needs more practice</h3>
     <p style="font-size:18px">${rows.length ? rows.map(r=>`<b>${esc(label(r.k))}</b> (missed ${r.miss}, right ${r.ok})`).join(" · ") : "Nothing yet!"}</p>
     <h3>Auto-save file</h3><p style="font-size:18px">${FS.state==="unsupported"?"Not available in this browser. Use Chrome or Edge on the laptop.":FS.state==="ready"?"✅ On. Progress is saved to a file on this computer after every change, so clearing the browser will not lose it.":FS.state==="needs"?"⏸ Paused. Tap the button to turn it back on.":"Not set up yet. Choose a file once (for example in Documents) and progress saves there automatically."}</p>${FS.state==="none"?`<button class="small ok" id="fsPick">💾 Choose auto-save file</button>`:""}${FS.state==="needs"?`<button class="small ok" id="fsOn2">▶ Turn auto-save on</button>`:""}${FS.state==="ready"?`<button class="small ghost" id="fsPick">Change file</button>`:""}
+    ${cloudSection()}
     <h3>Backup</h3><p style="font-size:18px">Last backup: <b>${p.lastBackup||"never"}</b>. The home screen reminds you each week.</p><h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
     <div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
     <input type="file" id="file" accept=".json" style="display:none">
     <button class="small alt" id="del">Delete this player</button></div>`, ()=>{
       $("#del").onclick = ()=>{ if(confirm("Delete "+p.name+" and all their progress?")){ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); } };
       $("#exp").onclick = ()=>{ downloadBackup(); showGrownUp(); };
+      const ci = $("#cloudIn"); if(ci) ci.onclick = ()=>cloudSignInScreen();
+      const cn = $("#cloudNow"); if(cn) cn.onclick = async()=>{ cn.disabled = true; await cloudSync(); showGrownUp(); };
+      const co = $("#cloudOut"); if(co) co.onclick = async()=>{ await Cloud.signOut(); showGrownUp(); };
       const fp = $("#fsPick"); if(fp) fp.onclick = async()=>{ await fsPick(); showGrownUp(); };
       const f2 = $("#fsOn2"); if(f2) f2.onclick = async()=>{ await fsAllow(); showGrownUp(); };
       $("#imp").onclick = ()=>$("#file").click();
@@ -1288,6 +1343,7 @@ function showGrownUp(){
 /* =============================================================
    START
    ============================================================= */
+if(typeof Cloud!=="undefined" && Cloud.on) Cloud.init().then(async u=>{ if(!u) return; const ch = await cloudSync(); if(ch){ if(P() && document.querySelector("#closet")) home(); else if(!P() && DB.profiles.length) profilesScreen(); } }).catch(()=>{});
 fsInit().then(()=>{ if(DB.profiles.length===0 && FS.handle) createProfile(); else if(FS.state==="needs" && P() && document.querySelector("#closet")) home(); });
 if(DB.profiles.length === 0){ applyTheme(); createProfile(); }
 else if(DB.profiles.length === 1){ DB.current = DB.profiles[0].id; home(); }
