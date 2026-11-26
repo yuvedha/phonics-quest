@@ -74,6 +74,11 @@ body.paused *{animation-play-state:paused !important}
 .subj{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:200px;padding:16px 22px;border-radius:24px;font-family:inherit;border:4px solid #c9b8ff;background:linear-gradient(#fff,#f3ecff);color:#33265a;cursor:pointer;box-shadow:0 6px 0 #c9b8ff}
 .subj .si{font-size:56px;line-height:1}.subj .sn{font-size:24px;font-weight:900}.subj .ss{font-size:16px}
 .subj.alldone{border-color:#7bd88f;box-shadow:0 6px 0 #7bd88f}
+.sent{font-size:38px;line-height:1.6;font-weight:800;color:#33265a;margin:10px 4px}
+.sent.small{font-size:24px}
+.rw{display:inline-block;padding:0 4px;border-radius:10px;cursor:pointer}
+.rw:hover,.rw.on{background:#ffe9a8}
+.rw b{color:#e0457b}
 .rulebox{background:#eaf6ff;border:3px solid #9fd3ff;border-radius:14px;padding:6px 12px;margin:6px auto;max-width:560px;font-size:18px;font-weight:bold;color:#1d4e89}
 .dgname{font-weight:900;font-size:44px;color:#e0457b;letter-spacing:2px}
 .stamp{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);font-size:min(46vw,260px);line-height:1;font-weight:900;pointer-events:none;z-index:20;animation:stampin .75s ease-out forwards;text-shadow:0 6px 0 rgba(0,0,0,.15)}
@@ -92,6 +97,7 @@ body.paused *{animation-play-state:paused !important}
 <div id="app"></div>
 <script src="content.js"></script>
 <script src="maths.js"></script>
+<script src="reading.js"></script>
 <script src="cloud-config.js"></script>
 <script src="cloud.js"></script>
 <script>
@@ -110,6 +116,7 @@ const CH = {
   c4:{icon:"🖼️", name:"Picture Quest",     about:"See the picture. Say the word, then spell it!",       max:PICTURE_LEVELS.length},
   c5:{icon:"🔍", name:"Digraph Detective", about:"Find the missing digraph in each word.",              max:DETECTIVE.length},
   c6:{icon:"🧪", name:"Digraph Daily Test", about:"A fresh mix of every digraph sound you have learned. Different every day!", max:1, daily:true},
+  c8:{icon:"🚀", name:"Reading Rocket", about:"Read fun sentences and tiny stories, then answer a question!", max:READING.length},
   c7:{icon:"🔢", name:"Maths Magic", about:"Count, add, take away, shapes, time, money and more!", max:MATH_LEVELS.length}
 };
 const CHS = Object.keys(CH);
@@ -675,7 +682,7 @@ const c6Ready = p => Object.keys(p.done.c3||{}).some(k=>p.done.c3[k]>=1);
 const activeChs = p => CHS.filter(ch=>ch!=="c6" || c6Ready(p));
 function todayLevel(p, ch){ return Math.min(p.prog[ch], CH[ch].max); }
 const SUBJECTS = [
-  {id:"phonics", icon:"📖", name:"Phonics & Spelling", chs:["c1","c2","c3","c4","c5","c6"]},
+  {id:"phonics", icon:"📖", name:"Phonics & Spelling", chs:["c1","c2","c3","c8","c4","c5","c6"]},
   {id:"maths",   icon:"🔢", name:"Maths",              chs:["c7"]}
 ];
 const subjectOf = ch => (SUBJECTS.find(sj=>sj.chs.includes(ch))||SUBJECTS[0]).id;
@@ -1258,6 +1265,64 @@ RUN.c7 = level=>{
     draw(); later(()=>speak(x.say), 250);
   }
   ask();
+};
+
+/* =============================================================
+   CHAPTER 8: READING ROCKET (sentences and mini stories matched to the phonics so far)
+   She reads aloud, a grown-up taps "She read it!", then she answers a question.
+   ============================================================= */
+MENU.c8 = ()=>levelMenu("c8", READING.map(l=>l.name));
+RUN.c8 = level=>{
+  const L = READING[level-1], items = shuffle(L.items).slice(0, 6), n = items.length;
+  const run = {pts:0, first:0, score:0};
+  let i = 0;
+  const clean = w => w.replace(/[^A-Za-z]/g,"");
+  function sentHTML(t, small){
+    return `<div class="sent ${small?"small":""}">${t.split(/\s+/).map(tok=>{
+      const c = clean(tok); let shown = tok;
+      if(c){ const lc = c.toLowerCase(); for(const h of L.hl){ const k = lc.indexOf(h); if(k>=0){ const at = tok.toLowerCase().indexOf(h); shown = tok.slice(0,at)+"<b>"+tok.slice(at,at+h.length)+"</b>"+tok.slice(at+h.length); break; } } }
+      return `<span class="rw" data-w="${c}">${shown}</span>`; }).join(" ")}</div>`;
+  }
+  const wire = ()=>$$(".rw").forEach(e=>e.onclick=()=>{ if(e.dataset.w) speak(e.dataset.w); });
+  function read(){
+    if(i >= n) return finishScreen("c8", level, run, run.score/n, 0.8, 0.5);
+    const [t,q,a,w,e] = items[i]; let helped = false;
+    view(`<div class="card"><h2>🚀 Read it! ${i+1}/${n}</h2>
+      <div class="bar"><div style="width:${i/n*100}%"></div></div>
+      <div class="rulebox">📘 ${L.focus}</div>
+      <div class="big">${e}</div>${sentHTML(t)}
+      <p style="font-size:16px;margin:2px">Tap any word to hear it.</p>
+      <div class="row"><button id="hear" class="ghost">🔊 Hear it</button><button id="slow" class="ghost">🐢 Word by word</button></div>
+      <div style="margin-top:8px"><button class="ok" id="did">✅ She read it!</button></div></div>`, ()=>{
+        wire();
+        $("#hear").onclick = ()=>{ helped = true; speak(t); };
+        $("#slow").onclick = ()=>{ helped = true; const ws = $$(".rw"); ws.forEach((el,j)=>later(()=>{ ws.forEach(x=>x.classList.remove("on")); el.classList.add("on"); if(el.dataset.w) speak(el.dataset.w); }, j*1000)); later(()=>ws.forEach(x=>x.classList.remove("on")), ws.length*1000); };
+        $("#did").onclick = ()=>{ const pts = helped?3:6; run.pts += pts; addPoints(pts); sndGood(); check(helped); };
+      });
+  }
+  function check(helped){
+    const [t,q,a,w,e] = items[i], opts = shuffle([a, ...w.split("|")]); let attempts = 0, done = false, wrongOpts = [];
+    function draw(msg, cls){
+      view(`<div class="card"><h2>🤔 Question ${i+1}/${n}</h2>${sentHTML(t,true)}<div class="mq">${q}</div>
+        <div class="msg ${cls||""}">${msg||""}</div>
+        <div class="row">${opts.map((o,k)=>`<button class="ghost" style="font-size:24px" data-o="${k}" ${done||wrongOpts.includes(k)?"disabled":""}>${o}</button>`).join("")}</div></div>`, ()=>{
+          wire(); $$("[data-o]").forEach(b=>b.onclick=()=>pickOpt(+b.dataset.o)); });
+    }
+    function pickOpt(k){
+      if(done) return;
+      if(opts[k] === a){
+        done = true; const pts = attempts===0?6:attempts===1?3:1; run.pts += pts; addPoints(pts); sndGood();
+        run.score += (helped?0.25:0.5) + (attempts===0?0.5:attempts===1?0.25:0);
+        draw(`Yes! +${pts} ⭐`, "good-t"); later(()=>{ i++; read(); }, 1400);
+      } else {
+        attempts++; wrongOpts.push(k); sndBad();
+        if(attempts>=2){ done = true; run.score += helped?0.25:0.5; draw(`The answer is “${a}”. Read the sentence again!`, "bad-t"); later(()=>{ i++; read(); }, 3000); }
+        else draw("Not quite. Look at the sentence and try again!", "bad-t");
+      }
+    }
+    draw();
+  }
+  read();
 };
 
 /* =============================================================

@@ -23,3 +23,4 @@ Levels can carry a `rule:"..."` line that is shown to the child (FLOSS, soft c a
 - **Maths Magic** (Chapter 7): Year 1 and 2 maths in `maths.js`, with questions generated fresh each time (counting, add and take away, number bonds, skip counting, place value, shapes, time, money, fractions, patterns, word problems). Add levels at the END of `MATH_LEVELS`.
 - **Cloud progress** (optional): follow `SETUP-CLOUD.md`, then fill in `cloud-config.js`. `cloud.js` talks to Firebase only when configured.
 - **Installable app**: `manifest.webmanifest`, `sw.js` and `icons/` make it installable and playable offline. If you add new files, add them to FILES in sw.js.
+- **Reading Rocket** (Chapter 8, under Phonics): decodable sentences and mini stories in `reading.js`, 12 levels matched to the phonics so far. Add levels at the END of `READING`.
