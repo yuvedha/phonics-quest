@@ -641,7 +641,7 @@ function home(){
     <div class="row"><button class="small ghost" id="switch">👥 Switch player</button><button class="small ghost" id="grown">👩‍👧 Grown-up corner</button></div>
   `, ()=>{
     $("#closet").onclick = $("#av").onclick = closet;
-    $$("[data-play]").forEach(b=>b.onclick=()=>RUN[b.dataset.play](todayLevel(p,b.dataset.play)));
+    $$("[data-play]").forEach(b=>b.onclick=()=>{ const ch = b.dataset.play; backTo = ()=>MENU[ch](); RUN[ch](todayLevel(p,ch)); });
     $$("[data-menu]").forEach(b=>b.onclick=()=>MENU[b.dataset.menu]());
     $("#switch").onclick = profilesScreen; $("#grown").onclick = grownUp;
     const fo = $("#fsOn"); if(fo) fo.onclick = async()=>{ await fsAllow(); home(); };
