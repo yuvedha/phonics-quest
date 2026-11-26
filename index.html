@@ -71,6 +71,9 @@ body.paused *{animation-play-state:paused !important}
 .numpad{display:grid;grid-template-columns:repeat(3,76px);gap:8px;justify-content:center;margin:6px auto}
 .numpad button{font-size:30px;padding:10px 0}
 .mq{font-size:34px;font-weight:900;color:#33265a;margin:6px}
+.subj{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:200px;padding:16px 22px;border-radius:24px;font-family:inherit;border:4px solid #c9b8ff;background:linear-gradient(#fff,#f3ecff);color:#33265a;cursor:pointer;box-shadow:0 6px 0 #c9b8ff}
+.subj .si{font-size:56px;line-height:1}.subj .sn{font-size:24px;font-weight:900}.subj .ss{font-size:16px}
+.subj.alldone{border-color:#7bd88f;box-shadow:0 6px 0 #7bd88f}
 .rulebox{background:#eaf6ff;border:3px solid #9fd3ff;border-radius:14px;padding:6px 12px;margin:6px auto;max-width:560px;font-size:18px;font-weight:bold;color:#1d4e89}
 .dgname{font-weight:900;font-size:44px;color:#e0457b;letter-spacing:2px}
 .stamp{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);font-size:min(46vw,260px);line-height:1;font-weight:900;pointer-events:none;z-index:20;animation:stampin .75s ease-out forwards;text-shadow:0 6px 0 rgba(0,0,0,.15)}
@@ -671,6 +674,27 @@ function createProfile(){
 const c6Ready = p => Object.keys(p.done.c3||{}).some(k=>p.done.c3[k]>=1);
 const activeChs = p => CHS.filter(ch=>ch!=="c6" || c6Ready(p));
 function todayLevel(p, ch){ return Math.min(p.prog[ch], CH[ch].max); }
+const SUBJECTS = [
+  {id:"phonics", icon:"📖", name:"Phonics & Spelling", chs:["c1","c2","c3","c4","c5","c6"]},
+  {id:"maths",   icon:"🔢", name:"Maths",              chs:["c7"]}
+];
+const subjectOf = ch => (SUBJECTS.find(sj=>sj.chs.includes(ch))||SUBJECTS[0]).id;
+function subjectScreen(id){
+  const p = P(), sj = SUBJECTS.find(x=>x.id===id) || SUBJECTS[0], d = dailyNow(p);
+  backTo = home;
+  view(`<div class="card" style="text-align:left"><h2 style="text-align:center">${sj.icon} ${sj.name}</h2>
+    <p style="text-align:center;font-size:18px;margin-top:0">Pick a chapter. Finish at least one level today!</p>
+    ${sj.chs.map(ch=>{
+      const lv = todayLevel(p,ch), done = d.chapters.includes(ch), st = p.done[ch][lv]||0;
+      if(ch==="c6" && !c6Ready(p)) return `<div class="card ch" style="margin:8px 0;padding:12px;opacity:.7"><div><h3>${CH[ch].icon} ${CH[ch].name} 🔒</h3><div style="font-size:16px">Finish a Digraph Lesson (Chapter 3) to unlock the daily test.</div></div></div>`;
+      return `<div class="card ch ${done?"":"today"}" style="margin:8px 0;padding:12px"><div><h3>${CH[ch].icon} ${CH[ch].name} ${done?"✅":""}</h3>
+        <div style="font-size:16px">${CH[ch].about}</div><div style="font-size:18px"><b>${CH[ch].daily?"Today's test":"Today: Level "+lv}</b> ${"⭐".repeat(st)}</div></div>
+        <div style="text-align:center"><button class="ok" data-play="${ch}">${done?"Again":"Play"} ▶</button>${CH[ch].daily?"":`<br><button class="small ghost" data-menu="${ch}">All levels</button>`}</div></div>`;
+    }).join("")}</div>`, ()=>{
+    $$("[data-play]").forEach(b=>b.onclick=()=>{ const ch = b.dataset.play; backTo = ()=>MENU[ch](); RUN[ch](todayLevel(p,ch)); });
+    $$("[data-menu]").forEach(b=>b.onclick=()=>MENU[b.dataset.menu]());
+  });
+}
 function home(){
   backTo = null;
   const p = P(); if(!p) return profilesScreen();
@@ -689,21 +713,15 @@ function home(){
         <div class="bar" style="max-width:360px;margin:0 auto"><div style="width:${Math.min(100,p.points/nextItem.cost*100)}%"></div></div>`:`<p>You own everything! 🏆</p>`}
       <button class="ok" id="closet">👗 My Avatar &amp; Shop</button>
     </div>
-    <div class="card" style="text-align:left"><h2 style="text-align:center">🗓️ Today's Quest</h2>
-      <p style="text-align:center;font-size:18px;margin-top:0">Finish at least one level today. Do more for bonus stars!</p>
-      ${CHS.map(ch=>{
-        const lv = todayLevel(p,ch), done = d.chapters.includes(ch), st = p.done[ch][lv]||0;
-        if(ch==="c6" && !c6Ready(p)) return `<div class="card ch" style="margin:8px 0;padding:12px;opacity:.7"><div><h3>${CH[ch].icon} ${CH[ch].name} 🔒</h3><div style="font-size:16px">Finish a Digraph Lesson (Chapter 3) to unlock the daily test.</div></div></div>`;
-        return `<div class="card ch ${done?"":"today"}" style="margin:8px 0;padding:12px"><div><h3>${CH[ch].icon} ${CH[ch].name} ${done?"✅":""}</h3>
-          <div style="font-size:16px">${CH[ch].about}</div><div style="font-size:18px"><b>${CH[ch].daily?"Today's test":"Today: Level "+lv}</b> ${"⭐".repeat(st)}</div></div>
-          <div style="text-align:center"><button class="ok" data-play="${ch}">${done?"Again":"Play"} ▶</button>${CH[ch].daily?"":`<br><button class="small ghost" data-menu="${ch}">All levels</button>`}</div></div>`;
-      }).join("")}
+    <div class="card"><h2>🗓️ Today's Quest</h2>
+      <p style="margin-top:0;font-size:18px">Finish at least one level today. Do more for bonus stars!</p>
+      <div class="row">${SUBJECTS.map(sj=>{ const act = sj.chs.filter(c=>activeChs(p).includes(c)), dn = act.filter(c=>d.chapters.includes(c)).length;
+        return `<button class="subj ${dn&&dn===act.length?"alldone":""}" data-subj="${sj.id}"><span class="si">${sj.icon}</span><span class="sn">${sj.name}</span><span class="ss">${dn} of ${act.length} done today ${dn===act.length&&act.length?"✅":""}</span></button>`; }).join("")}</div>
     </div>
     <div class="row"><button class="small ghost" id="switch">👥 Switch player</button><button class="small ghost" id="grown">👩‍👧 Grown-up corner</button></div>
   `, ()=>{
     $("#closet").onclick = $("#av").onclick = closet;
-    $$("[data-play]").forEach(b=>b.onclick=()=>{ const ch = b.dataset.play; backTo = ()=>MENU[ch](); RUN[ch](todayLevel(p,ch)); });
-    $$("[data-menu]").forEach(b=>b.onclick=()=>MENU[b.dataset.menu]());
+    $$("[data-subj]").forEach(b=>b.onclick=()=>subjectScreen(b.dataset.subj));
     $("#switch").onclick = profilesScreen; $("#grown").onclick = grownUp;
     const fo = $("#fsOn"); if(fo) fo.onclick = async()=>{ await fsAllow(); home(); };
     const bk = $("#bk"); if(bk) bk.onclick = ()=>{ if(askPin("Grown-up PIN to save a backup:")){ downloadBackup(); home(); } };
@@ -754,7 +772,7 @@ function closet(){
    ============================================================= */
 const MENU = {}, RUN = {};
 function levelMenu(ch, rows){
-  backTo = null;
+  backTo = ()=>subjectScreen(subjectOf(ch));
   const p = P(), cur = todayLevel(p, ch);
   view(`<div class="card"><h2>${CH[ch].icon} ${CH[ch].name}</h2><p style="font-size:18px">${CH[ch].about}</p>
     ${rows.map((r,i)=>{
@@ -1110,7 +1128,7 @@ RUN.c3 = level=>{
    Each day it picks the sounds tested least recently (and any she finds hard),
    asks which sound the digraph makes, then spells a few of the words.
    ============================================================= */
-MENU.c6 = ()=>home();
+MENU.c6 = ()=>subjectScreen("phonics");
 RUN.c6 = ()=>{
   const p = P(); p.c6 = p.c6 || {seen:{}, recent:[], count:0};
   const lessons = LESSONS.map((L,i)=>({L,i})).filter(x=>(p.done.c3[x.i+1]||0)>=1);
