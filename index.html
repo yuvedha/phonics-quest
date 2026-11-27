@@ -1252,6 +1252,20 @@ RUN[ch] = level=>{
   order.forEach(g=>{ let q, t = 0; do{ q = GEN[g[0]](...g.slice(1)); t++; }while(qs.some(o=>o.q===q.q) && t<30); q.key = q.key || g[0]; qs.push(q); });
   const run = {pts:0, first:0};
   let i = 0;
+  function lesson(k){
+    const pg = L.learn[k], last = k===L.learn.length-1;
+    view(`<div class="card"><h2>📖 Let's learn first! ${k+1}/${L.learn.length}</h2>
+      <h3 style="margin:4px 0">${pg.title}</h3>${pg.html}
+      <button id="say">🔊 Read it to me</button>
+      <div class="row" style="margin-top:10px">${k>0?'<button class="ghost" id="prv">◀ Back</button>':""}<button class="ok" id="nxt">${last?"Start the quiz! 🚀":"Next ▶"}</button></div>
+      <p><button class="ghost" id="skp" style="font-size:14px">Skip to the quiz</button></p></div>`, ()=>{
+        $("#say").onclick = ()=>speak(pg.say);
+        const pv = $("#prv"); if(pv) pv.onclick = ()=>lesson(k-1);
+        $("#nxt").onclick = ()=>{ if(last) ask(); else lesson(k+1); };
+        $("#skp").onclick = ()=>ask();
+      });
+    later(()=>speak(pg.say), 300);
+  }
   function ask(){
     if(i >= qs.length) return finishScreen(ch, level, run, run.first/qs.length, 0.8, 0.5);
     const x = qs[i]; let attempts = 0, done = false, typed = "", wrongOpts = [];
@@ -1287,7 +1301,7 @@ RUN[ch] = level=>{
     function choose(k){ if(done) return; if(String(x.opts[k]) === String(x.ans)) right(); else { wrongOpts.push(+k); wrong(attempts>=Math.min(2,x.opts.length-2)); } }
     draw(); later(()=>speak(x.say), 250);
   }
-  ask();
+  if(L.learn && L.learn.length) lesson(0); else ask();
 };
 }
 genChapter("c7", MATH_LEVELS, MATH_GEN, "m:");

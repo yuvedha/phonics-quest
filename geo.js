@@ -154,3 +154,53 @@ const COUNTRY_LEVELS = [
   ..._CONT_ORDER.map(ct=>({name:`${_CONT_ICON[ct]} Countries of ${_contName(ct)}`, gens:[["dot",ct],["flag",ct],["capital",ct],["incont",ct]]})),
   ...COUNTRIES.map(c=>({name:`${c[2]} ${c[1]}`, n:Math.min(8, 4 + c[7].length), gens:[["country",c[0]]]}))
 ];
+
+/* ---------- Learn pages: shown before the quiz in the Geography levels (the child sees and hears the facts first) ---------- */
+const CONT_INFO = {
+  na:["North America has Canada, the USA and Mexico.","The Rocky Mountains and the Statue of Liberty are here. Bears, beavers and eagles live here too."],
+  sa:["South America has the giant Amazon rainforest.","The Andes are a very long line of mountains. Llamas live there."],
+  eu:["Europe has lots of castles and old cities, like London and Paris.","The Eiffel Tower and Big Ben are here. Many countries are close together."],
+  af:["Africa has the Sahara, the biggest hot desert, and the long Nile river.","Lions, elephants and giraffes live on the grassy savanna."],
+  as:["Asia is the biggest continent and has the most people.","Mount Everest, the Great Wall of China and giant pandas are here."],
+  oc:["Oceania is the smallest continent. Australia is the biggest part of it.","Kangaroos, koalas and the Great Barrier Reef are here. New Zealand is in Oceania too."],
+  an:["Antarctica is the coldest continent. It is covered in thick ice.","Penguins and seals live here. It has no countries, only visiting scientists."]
+};
+const CONT_SHAPE = {na:"It is shaped a bit like a big triangle, with a huge island called Greenland on top.", sa:"It is shaped like an ice-cream cone, wide at the top and pointy at the bottom.", eu:"It is small and bumpy, with lots of coast and peninsulas.", af:"It is a big shape that is wide at the top and gets narrower at the bottom.", as:"It is the biggest shape, with lots of islands on the south-east side.", oc:"It is mostly one big island, Australia, with New Zealand beside it.", an:"It is a flat white lump at the very bottom of the world."};
+const _lp = (title, html, say)=>({title, html, say});
+function _learnContinents(mode){
+  const pages = [];
+  if(mode==="colour") pages.push(_lp("The 7 continents", _geoSvg(null,"colour")+`<div class="mq">${CONT_IDS.map(id=>_CSQ[id]+" "+_contName(id)).join("<br>")}</div>`, "The world has seven big pieces of land. They are called continents. They are North America, South America, Europe, Africa, Asia, Oceania and Antarctica."));
+  CONT_IDS.forEach(id=>{
+    const m = mode==="colour" ? "colour" : mode==="alone" ? "alone" : mode==="world" ? "world" : mode==="blank" ? "blank" : "colour";
+    pages.push(_lp(`${_CSQ[id]} ${_contName(id)}`, _geoSvg(id,m)+`<div class="mq">${_CONT_ICON[id]||"🐧"} <b>${_contName(id)}</b></div><p style="font-size:20px">${CONT_SHAPE[id]}<br>${CONT_INFO[id][0]}<br>${CONT_INFO[id][1]}</p>`, `${_contName(id)}. ${CONT_SHAPE[id]} ${CONT_INFO[id][0]} ${CONT_INFO[id][1]}`));
+  });
+  return pages;
+}
+const OCEAN_INFO = {
+  pacific:["The Pacific Ocean",-150,0,"It is the biggest and deepest ocean. It is next to the east coast of Australia."],
+  atlantic:["The Atlantic Ocean",-35,15,"It is between Europe and Africa on one side, and North and South America on the other."],
+  indian:["The Indian Ocean",80,-20,"It is the warm ocean between Africa, Asia and Australia."],
+  southern:["The Southern Ocean",0,-66,"It is the icy cold ocean all around Antarctica."],
+  arctic:["The Arctic Ocean",0,80,"It is at the very top of the world, around the North Pole. It is the smallest and coldest ocean."]
+};
+function _oceanSvg(hi){
+  const base = _geoSvg(null,"colour").replace("</svg>","");
+  let extra = "";
+  Object.entries(OCEAN_INFO).forEach(([k,o])=>{ extra += `<ellipse cx="${o[1]}" cy="${-o[2]}" rx="38" ry="15" fill="${k===hi?"#ff9f1c":"#5aa9e6"}" opacity="${k===hi?0.85:0.45}"/>`; });
+  return base+extra+"</svg></div>";
+}
+function _learnOceans(){ return Object.entries(OCEAN_INFO).map(([k,o])=>_lp("🌊 "+o[0], _oceanSvg(k)+`<p style="font-size:20px"><b>${o[0]}</b><br>${o[3]}</p>`, `${o[0]}. ${o[3]}`)).concat([_lp("🌊 Remember", `<p style="font-size:22px">There are <b>5 oceans</b>:<br>Pacific, Atlantic, Indian, Southern and Arctic.<br>Ocean water is salty, and oceans cover more of the Earth than land!</p>`, "There are five oceans: Pacific, Atlantic, Indian, Southern and Arctic. Ocean water is salty, and oceans cover more of the Earth than land.")]); }
+function _countryPage(id){
+  const c=_CO[id];
+  return _lp(`${c.flag} ${c.name}`, _geoSvg(c.cont,"crop",[c.lon,c.lat])+`<div class="mq" style="font-size:44px">${c.flag}</div><p style="font-size:20px"><b>${c.name}</b> is in <b>${_contName(c.cont)}</b>.<br>Its capital city is <b>${c.cap}</b>.<br>${c.facts.map(f=>"❓ "+f[0]+"<br>➜ <b>"+f[1]+"</b>").join("<br>")}</p>`,
+    `${c.name} is in ${_contName(c.cont)}. Its capital city is ${c.cap}. ${c.facts.map(f=>f[0]+" "+f[1]+".").join(" ")}`);
+}
+GEO_LEVELS[0].learn = _learnContinents("colour");
+GEO_LEVELS[1].learn = _learnContinents("alone");
+GEO_LEVELS[2].learn = _learnContinents("world");
+GEO_LEVELS[3].learn = _learnContinents("colour");
+GEO_LEVELS[4].learn = _learnOceans();
+COUNTRY_LEVELS.forEach((L,i)=>{
+  if(i<_CONT_ORDER.length) L.learn = _inCont(_CONT_ORDER[i]).map(c=>_countryPage(c.id));
+  else L.learn = [_countryPage(COUNTRIES[i-_CONT_ORDER.length][0])];
+});
