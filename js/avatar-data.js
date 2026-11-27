@@ -23,7 +23,7 @@ function petFilter(id, hex){
 }
 /* Starting looks for the "girl" and "boy" choice when a new player is made (the boy look will be redone from a reference picture) */
 const STYLE_PRESETS = {
-  girl:{style:"girl", skin:1, hair:"dollwave", hairColor:1, eyes:"sparkle", eyeColor:0, mouth:"smile", topStyle:"crochet", top:10, bottomStyle:"cargo", bottom:10, dress:"none", shoes:6},
+  girl:{style:"girl", photo:true, skin:1, hair:"dollwave", hairColor:1, eyes:"sparkle", eyeColor:0, mouth:"smile", topStyle:"crochet", top:10, bottomStyle:"cargo", bottom:10, dress:"none", shoes:6},
   boy:{style:"boy", skin:1, hair:"quiff", hairColor:0, eyes:"round", eyeColor:0, mouth:"grin", topStyle:"tee", top:9, bottomStyle:"cargo", bottom:12, dress:"none", shoes:3}
 };
 const STYLES = [["girl","👧 Girl"],["boy","👦 Boy"]];
@@ -56,22 +56,22 @@ const ITEMS = [
   {id:"h5", slot:"hat", name:"Top hat", icon:"🎩", cost:170},
   {id:"h6", slot:"hat", name:"Graduation cap", icon:"🎓", cost:240},
   {id:"h7", slot:"hat", name:"Crown", icon:"👑", cost:350},
-  {id:"h8", slot:"hat", name:"Daisy crochet bandana", icon:"🧶", cost:140},
+  {id:"h8", slot:"hat", for:"girl", name:"Daisy crochet bandana", icon:"🧶", cost:140},
   {id:"k_hp", slot:"hat", pack:"idol", name:"Idol headphones", icon:"🎧", cost:120},
-  {id:"ha1", slot:"hairacc", name:"Big bow", icon:"🎀", cost:30},
-  {id:"ha2", slot:"hairacc", name:"Flower clip", icon:"🌸", cost:40},
-  {id:"ha3", slot:"hairacc", name:"Star clips", icon:"⭐", cost:60},
-  {id:"ha4", slot:"hairacc", name:"Butterfly clip", icon:"🦋", cost:90},
-  {id:"ha5", slot:"hairacc", name:"Gold headband", icon:"✨", cost:150},
+  {id:"ha1", slot:"hairacc", for:"girl", name:"Big bow", icon:"🎀", cost:30},
+  {id:"ha2", slot:"hairacc", for:"girl", name:"Flower clip", icon:"🌸", cost:40},
+  {id:"ha3", slot:"hairacc", for:"girl", name:"Star clips", icon:"⭐", cost:60},
+  {id:"ha4", slot:"hairacc", for:"girl", name:"Butterfly clip", icon:"🦋", cost:90},
+  {id:"ha5", slot:"hairacc", for:"girl", name:"Gold headband", icon:"✨", cost:150},
   {id:"g1", slot:"glasses", name:"Round glasses", icon:"👓", cost:35},
   {id:"g2", slot:"glasses", name:"Cool shades", icon:"🕶️", cost:90},
   {id:"g3", slot:"glasses", name:"Goggles", icon:"🥽", cost:200},
   {id:"k_sh", slot:"glasses", pack:"idol", name:"Star stage shades", icon:"🌟", cost:140},
-  {id:"e1", slot:"earrings", name:"Gold studs", icon:"🟡", cost:30},
-  {id:"e3", slot:"earrings", name:"Heart earrings", icon:"❤️", cost:55},
-  {id:"e4", slot:"earrings", name:"Star earrings", icon:"⭐", cost:75},
-  {id:"e2", slot:"earrings", name:"Gold hoops", icon:"⭕", cost:120},
-  {id:"e5", slot:"earrings", name:"Pink hoops", icon:"🩷", cost:60},
+  {id:"e1", slot:"earrings", for:"girl", name:"Gold studs", icon:"🟡", cost:30},
+  {id:"e3", slot:"earrings", for:"girl", name:"Heart earrings", icon:"❤️", cost:55},
+  {id:"e4", slot:"earrings", for:"girl", name:"Star earrings", icon:"⭐", cost:75},
+  {id:"e2", slot:"earrings", for:"girl", name:"Gold hoops", icon:"⭕", cost:120},
+  {id:"e5", slot:"earrings", for:"girl", name:"Pink hoops", icon:"🩷", cost:60},
   {id:"f1", slot:"face", name:"Freckles", icon:"🟤", cost:20},
   {id:"f2", slot:"face", name:"Sparkle cheeks", icon:"✨", cost:40},
   {id:"f3", slot:"face", name:"Star sticker", icon:"⭐", cost:60},
@@ -79,17 +79,31 @@ const ITEMS = [
   {id:"f5", slot:"face", name:"Face gems", icon:"💎", cost:140},
   {id:"f6", slot:"face", name:"Glitter", icon:"🌟", cost:200},
   {id:"o_hero", slot:"costume", name:"Hero suit", icon:"🦸", cost:160},
-  {id:"o_disco", slot:"costume", name:"Disco sparkle dress", icon:"🪩", cost:240},
+  {id:"o_disco", slot:"costume", for:"girl", name:"Disco sparkle dress", icon:"🪩", cost:240},
   {id:"o_astro", slot:"costume", name:"Astronaut suit", icon:"🧑‍🚀", cost:300},
-  {id:"o_gown", slot:"costume", name:"Princess gown", icon:"👸", cost:420},
-  {id:"o_mermaid", slot:"costume", name:"Mermaid tail", icon:"🧜‍♀️", cost:560},
+  {id:"o_gown", slot:"costume", for:"girl", name:"Princess gown", icon:"👸", cost:420},
+  {id:"o_mermaid", slot:"costume", for:"girl", name:"Mermaid tail", icon:"🧜‍♀️", cost:560},
   {id:"o_idol", slot:"costume", pack:"idol", name:"Stage idol outfit", icon:"🎤", cost:280},
   {id:"o_hunter", slot:"costume", pack:"idol", name:"Spirit hunter outfit", icon:"⚔️", cost:320},
   {id:"n3", slot:"neck", name:"Cosy scarf", icon:"🧣", cost:40},
   {id:"n2", slot:"neck", name:"Bow tie", icon:"🎀", cost:50},
-  {id:"n4", slot:"neck", name:"Heart pendant", icon:"💖", cost:80},
-  {id:"n1", slot:"neck", name:"Pearl necklace", icon:"🦪", cost:160},
-  {id:"n5", slot:"neck", name:"Crown chain", icon:"🔗", cost:90},
+  {id:"n4", slot:"neck", for:"girl", name:"Heart pendant", icon:"💖", cost:80},
+  {id:"n1", slot:"neck", for:"girl", name:"Pearl necklace", icon:"🦪", cost:160},
+  {id:"n5", slot:"neck", for:"boy", name:"Crown chain", icon:"🔗", cost:90},
+  {id:"bn2", slot:"neck", for:"boy", name:"Dog tag", icon:"🏷️", cost:70},
+  {id:"bc1", slot:"hat", for:"boy", name:"Backwards cap", icon:"🧢", cost:60},
+  {id:"bc2", slot:"hat", for:"boy", name:"Hard hat", icon:"⛑️", cost:110},
+  {id:"bc3", slot:"hat", for:"boy", name:"Top hat", icon:"🎩", cost:180},
+  {id:"bg1", slot:"glasses", for:"boy", name:"Sporty visor", icon:"🥽", cost:120},
+  {id:"w9", slot:"held", for:"boy", name:"Football", icon:"🏈", cost:40},
+  {id:"w10", slot:"held", for:"boy", name:"Skateboard", icon:"🛹", cost:110},
+  {id:"w11", slot:"held", for:"boy", name:"Basketball", icon:"🏀", cost:60},
+  {id:"w12", slot:"held", for:"boy", name:"Robot", icon:"🤖", cost:240},
+  {id:"w13", slot:"held", for:"boy", name:"Soccer ball", icon:"⚽", cost:50},
+  {id:"p10", slot:"pet", for:"boy", name:"Dinosaur", icon:"🦖", cost:300},
+  {id:"p11", slot:"pet", for:"boy", name:"Wolf pup", icon:"🐺", cost:260},
+  {id:"o_soccer", slot:"costume", for:"boy", name:"Soccer kit", icon:"⚽", cost:200},
+  {id:"o_ninja", slot:"costume", for:"boy", name:"Ninja suit", icon:"🥷", cost:260},
   {id:"k_ch", slot:"neck", pack:"idol", name:"Idol choker", icon:"🖤", cost:70},
   {id:"b1", slot:"back", name:"Red cape", icon:"🦸", cost:100},
   {id:"b2", slot:"back", name:"Butterfly wings", icon:"🦋", cost:230},
@@ -103,12 +117,12 @@ const ITEMS = [
   {id:"a_neon", slot:"aura", pack:"idol", name:"Neon stage lights", icon:"💜", cost:260},
   {id:"w1", slot:"held", name:"Flower", icon:"🌷", cost:20},
   {id:"w2", slot:"held", name:"Balloon", icon:"🎈", cost:45},
-  {id:"w3", slot:"held", name:"Magic wand", icon:"🪄", cost:85},
+  {id:"w3", slot:"held", for:"girl", name:"Magic wand", icon:"🪄", cost:85},
   {id:"w4", slot:"held", name:"Ice cream", icon:"🍦", cost:120},
   {id:"w5", slot:"held", name:"Guitar", icon:"🎸", cost:190},
   {id:"w6", slot:"held", name:"Trophy", icon:"🏆", cost:320},
-  {id:"w7", slot:"held", name:"Crochet daisy bag", icon:"👜", cost:130},
-  {id:"w8", slot:"held", name:"Peace sign", icon:"✌️", cost:15},
+  {id:"w7", slot:"held", for:"girl", name:"Crochet daisy bag", icon:"👜", cost:130},
+  {id:"w8", slot:"held", for:"girl", name:"Peace sign", icon:"✌️", cost:15},
   {id:"k_mic", slot:"held", pack:"idol", name:"Idol microphone", icon:"🎤", cost:100},
   {id:"k_stick", slot:"held", pack:"idol", name:"Neon light stick", icon:"✨", cost:150},
   {id:"k_fan", slot:"held", pack:"idol", name:"Spirit fan", icon:"🌸", cost:200},
@@ -118,7 +132,7 @@ const ITEMS = [
   {id:"p3", slot:"pet", name:"Bunny", icon:"🐰", cost:150},
   {id:"p6", slot:"pet", name:"Penguin", icon:"🐧", cost:190},
   {id:"p7", slot:"pet", name:"Fox", icon:"🦊", cost:220},
-  {id:"p4", slot:"pet", name:"Unicorn", icon:"🦄", cost:320},
+  {id:"p4", slot:"pet", for:"girl", name:"Unicorn", icon:"🦄", cost:320},
   {id:"p8", slot:"pet", name:"Panda", icon:"🐼", cost:380},
   {id:"p5", slot:"pet", name:"Dragon", icon:"🐉", cost:480},
   {id:"p9", slot:"pet", pack:"idol", name:"Tiger cub", icon:"🐯", cost:260},
@@ -130,6 +144,16 @@ const ITEMS = [
   {id:"t5", slot:"theme", name:"Space adventure", icon:"🚀", cost:560, bg:"linear-gradient(160deg,#cdbbff,#9fb4ff 60%,#ffd1f0)", deco:["🚀","🪐","⭐","🌙","👽","☄️"]}
 ];
 const item = id => ITEMS.find(i=>i.id===id);
+/* The picture look (girl) already wears these, so the shop does not sell them again */
+const IN_PHOTO = ["h8","e5","w7","w8"];
+const isPhoto = av => !!(av && av.photo && av.style!=="boy");
+/* boy/girl-only items: it.for = "boy" | "girl" (no field = for everyone) */
+function itemFits(it, av){
+  const sty = av && av.style==="boy" ? "boy" : "girl";
+  if(it.for && it.for!==sty) return false;
+  if(isPhoto(av) && (it.slot==="costume" || IN_PHOTO.includes(it.id))) return false;
+  return true;
+}
 
 function lighter(hex, amt=40){
   const n = parseInt(hex.slice(1),16);
@@ -159,7 +183,8 @@ const ITEM_ART = {
   k_blade:()=>`<path d="M152 238 L152 130" stroke="#27e0ff" stroke-width="12" stroke-linecap="round" opacity=".3"/><path d="M152 232 L152 134" stroke="#bff8ff" stroke-width="6" stroke-linecap="round"/><path d="M152 134 L146 124 L152 112 L158 124Z" fill="#fff"/><rect x="140" y="226" width="24" height="7" rx="3" fill="#7a3cff"/><rect x="148" y="233" width="8" height="16" rx="3" fill="#2b2d42"/>`
 };
 function avatarSVG(p, size=190, mood="happy", opts){
-  const a = Object.assign({}, AV_DEFAULT, p.avatar), eq = p.equipped || {};
+  const a = Object.assign({}, AV_DEFAULT, p.avatar), eq0 = p.equipped || {}, eq = {};
+  for(const k in eq0){ const it0 = item(eq0[k]); if(!it0 || itemFits(it0, a)) eq[k] = eq0[k]; }
   const bg = item(eq.bg || "bg0") || item("bg0");
   const small = size < 80 && !(opts && opts.vb);
   const vb = (opts && opts.vb) || (small ? [52,30,116,124] : [0,0,220,320]);
@@ -173,7 +198,10 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(cs==="o_astro"){ top="#f1f3f5"; bot="#f1f3f5"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#adb5bd"; }
   if(cs==="o_idol"){ top="#5b2bb0"; bot="#1b1b2f"; topStyle="long"; bottomStyle="shorts"; dress="none"; shoe="#ff2fa0"; }
   if(cs==="o_hunter"){ top="#16213e"; bot="#0f172a"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#27e0ff"; }
+  if(cs==="o_soccer"){ top="#2f9e44"; bot="#f1f3f5"; topStyle="tee"; bottomStyle="shorts"; dress="none"; shoe="#1b1b2f"; }
+  if(cs==="o_ninja"){ top="#212529"; bot="#212529"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#212529"; }
   if(fullCos) dress = "none";
+  const photo = isPhoto(a);
   const H = Math.round(size*vb[3]/vb[2]);
   let s = `<svg class="avsvg ${size>=150?"bob":""}" viewBox="${vb.join(" ")}" width="${size}" height="${H}" style="border-radius:${small?18:28}px;max-width:100%">
     <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bg.c[0]}"/><stop offset="1" stop-color="${bg.c[1]}"/></linearGradient><radialGradient id="${gid}s" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="${skin}"/><stop offset=".7" stop-color="${skin}"/><stop offset="1" stop-color="${darker(skin,22)}"/></radialGradient><linearGradient id="${gid}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lighter(hc,34)}"/><stop offset=".5" stop-color="${hc}"/><stop offset="1" stop-color="${darker(hc,34)}"/></linearGradient><linearGradient id="${gid}t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${lighter(top,34)}"/><stop offset=".55" stop-color="${top}"/><stop offset="1" stop-color="${darker(top,34)}"/></linearGradient><linearGradient id="${gid}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${lighter(bot,26)}"/><stop offset=".6" stop-color="${bot}"/><stop offset="1" stop-color="${darker(bot,34)}"/></linearGradient><radialGradient id="${gid}i" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="${eyeC}"/><stop offset="1" stop-color="${darker(eyeC,55)}"/></radialGradient></defs>
@@ -195,6 +223,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(eq.back==="b3") s += `<ellipse cx="50" cy="186" rx="38" ry="66" fill="#fff" stroke="#cbd5e1" stroke-width="3" transform="rotate(22 50 186)"/><ellipse cx="170" cy="186" rx="38" ry="66" fill="#fff" stroke="#cbd5e1" stroke-width="3" transform="rotate(-22 170 186)"/>`;
   if(eq.back==="b4") s += ["#ff6b6b","#ffd43b","#51cf66","#4dabf7","#9775fa"].map((c,i)=>`<ellipse cx="52" cy="186" rx="${42-i*6}" ry="${66-i*8}" fill="${c}" transform="rotate(24 52 186)"/><ellipse cx="168" cy="186" rx="${42-i*6}" ry="${66-i*8}" fill="${c}" transform="rotate(-24 168 186)"/>`).join("");
   // hair behind head
+  if(photo) s += `<g display="none">`;
   s += `<g transform="translate(110 150) scale(1.22) translate(-110 -150)">`;
   if(a.hair==="bob") s += `<rect x="58" y="68" width="104" height="84" rx="34" fill="url(#${gid}h)"/>`;
   if(a.hair==="long") s += `<rect x="56" y="66" width="108" height="150" rx="46" fill="url(#${gid}h)"/>`;
@@ -249,13 +278,15 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(a.hair==="braid") s += [0,1,2,3,4,5].map(i=>`<ellipse cx="${152+(i%2?3:-3)}" cy="${150+i*17}" rx="11" ry="12" fill="url(#${gid}h)"/>`).join("") + `<circle cx="152" cy="252" r="6" fill="#ff7eb6"/>`;
   // neck, ears, head
   s += `<rect x="100" y="138" width="20" height="22" fill="${skin}"/>`;
+  if(photo) s += `</g><image href="assets/girl.webp" x="42" y="8" width="136" height="304" preserveAspectRatio="xMidYMid meet"/>`;
   if(eq.neck==="n3") s += `<path d="M86 152 Q110 170 134 152 L134 166 Q110 184 86 166Z" fill="#ff922b"/><rect x="118" y="166" width="14" height="38" rx="5" fill="#ff922b"/>`;
   if(eq.neck==="n2") s += `<path d="M110 162 L90 150 L90 174Z M110 162 L130 150 L130 174Z" fill="#e03131"/><circle cx="110" cy="162" r="5" fill="#a51111"/>`;
   if(eq.neck==="n1") s += Array.from({length:9},(_,i)=>{ const th=Math.PI*i/8; return `<circle cx="${110-24*Math.cos(th)}" cy="${150+18*Math.sin(th)}" r="3.6" fill="#fff" stroke="#d6d6d6"/>`; }).join("");
   if(eq.neck==="k_ch") s += ITEM_ART.k_ch();
   if(eq.neck==="n5") s += ITEM_ART.n5();
+  if(eq.neck==="bn2") s += `<path d="M92 150 Q110 190 128 150" stroke="#b0bec5" stroke-width="2.2" fill="none"/><rect x="102" y="178" width="16" height="22" rx="7" fill="#cfd8dc" stroke="#78909c" stroke-width="1.5"/><circle cx="110" cy="184" r="2" fill="#78909c"/>`;
   if(eq.neck==="n4") s += `<path d="M90 150 Q110 184 130 150" stroke="#ffd43b" stroke-width="2" fill="none"/>${T(110,184,20,"💖")}`;
-  s += `<g transform="translate(110 150) scale(1.22) translate(-110 -150)"><ellipse cx="110" cy="148" rx="26" ry="8" fill="#000" opacity=".1"/><circle cx="64" cy="108" r="9" fill="${skin}"/><circle cx="64" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="156" cy="108" r="9" fill="${skin}"/><circle cx="156" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="110" cy="100" r="46" fill="url(#${gid}s)"/><ellipse cx="94" cy="72" rx="16" ry="7" fill="#fff" opacity=".14"/>`;
+  s += `<g transform="${photo?"translate(101 88) scale(.63) translate(-110 -112)":"translate(110 150) scale(1.22) translate(-110 -150)"}">${photo?`<g display="none">`:""}<ellipse cx="110" cy="148" rx="26" ry="8" fill="#000" opacity=".1"/><circle cx="64" cy="108" r="9" fill="${skin}"/><circle cx="64" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="156" cy="108" r="9" fill="${skin}"/><circle cx="156" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="110" cy="100" r="46" fill="url(#${gid}s)"/><ellipse cx="94" cy="72" rx="16" ry="7" fill="#fff" opacity=".14"/>`;
   // hair front
   const cap = `<path d="M62 100 Q60 50 110 48 Q160 50 158 100 Q140 74 110 76 Q80 74 62 100Z" fill="url(#${gid}h)"/>`;
   if(["short","bob","long","wavy","dollwave","quiff","bun","spacebuns","afro","pigtails","ponytail","braid","puffs"].includes(a.hair)) s += cap + `<path d="M76 70 Q94 56 120 58" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".28"/>`;
@@ -268,6 +299,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(a.hair==="mohawk") s += `<path d="M94 58 Q110 -4 126 58Z" fill="url(#${gid}h)"/>`;
   if(a.hair==="pigtails") s += `<circle cx="64" cy="114" r="5" fill="#ff7eb6"/><circle cx="156" cy="114" r="5" fill="#ff7eb6"/>`;
   if(a.hair==="ponytail") s += `<circle cx="158" cy="86" r="5" fill="#ff7eb6"/>`;
+  if(photo) s += `</g>`;
   // ears / horns
   if(eq.ears==="hc") s += `<path d="M70 72 L66 22 L102 54Z" fill="url(#${gid}h)"/><path d="M150 72 L154 22 L118 54Z" fill="url(#${gid}h)"/><path d="M73 62 L72 36 L92 54Z" fill="#ffb3d1"/><path d="M147 62 L148 36 L128 54Z" fill="#ffb3d1"/>`;
   if(eq.ears==="hb") s += `<ellipse cx="86" cy="24" rx="13" ry="38" fill="url(#${gid}h)" transform="rotate(-8 86 24)"/><ellipse cx="134" cy="24" rx="13" ry="38" fill="url(#${gid}h)" transform="rotate(8 134 24)"/><ellipse cx="86" cy="26" rx="6" ry="26" fill="#ffb3d1" transform="rotate(-8 86 26)"/><ellipse cx="134" cy="26" rx="6" ry="26" fill="#ffb3d1" transform="rotate(8 134 26)"/>`;
@@ -275,6 +307,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(eq.ears==="he_fox") s += `<path d="M68 74 L60 22 L104 56Z" fill="#ff922b"/><path d="M152 74 L160 22 L116 56Z" fill="#ff922b"/><path d="M64 46 L60 22 L80 38Z" fill="#fff"/><path d="M156 46 L160 22 L140 38Z" fill="#fff"/>`;
   if(eq.ears==="he_elf") s += `<path d="M64 98 L30 80 L64 120Z" fill="${skin}" stroke="#0001"/><path d="M156 98 L190 80 L156 120Z" fill="${skin}" stroke="#0001"/>`;
   if(eq.ears==="hu") s += `<path d="M110 -2 L94 56 L126 56Z" fill="#ffd54f" stroke="#e0a800" stroke-width="2"/><path d="M104 22 L117 27 M100 38 L120 43" stroke="#e0a800" stroke-width="3"/>`;
+  if(photo) s += `<g display="none">`;
   // eyes
   const exs = [94,126], ey = 102;
   const E = a.eyes;
@@ -305,6 +338,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   else if(M==="cat") s += `<path d="M96 122 Q103 132 110 122 Q117 132 124 122" stroke="#a3213f" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
   else if(M==="tongue") s += `<path d="M94 121 Q110 138 126 121" stroke="#a3213f" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M104 130 Q110 144 116 130Z" fill="#ff7b9c" stroke="#a3213f" stroke-width="2"/>`;
   else s += `<path d="M94 121 Q110 138 126 121" stroke="#a3213f" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M102 127 Q110 131 118 127" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".55"/>`;
+  if(photo) s += `</g>`;
   // face extras
   if(eq.face==="f1") s += [[82,114],[90,118],[76,119],[138,114],[130,118],[144,119]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2" fill="#a0522d"/>`).join("");
   if(eq.face==="f2") s += T(74,126,20,"✨")+T(146,126,20,"✨");
@@ -327,7 +361,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(hb==="ha5") s += `<path d="M62 92 Q110 38 158 92" stroke="#ffd43b" stroke-width="8" fill="none" stroke-linecap="round"/>${T(110,52,14,"✨")}`;
   const gl = eq.glasses && item(eq.glasses), ht = eq.hat && item(eq.hat), pt = eq.pet && item(eq.pet), hd = eq.held && item(eq.held);
   if(gl) s += ITEM_ART[gl.id] ? ITEM_ART[gl.id]() : T(110,114,58,gl.icon);
-  if(ht) s += ITEM_ART[ht.id] ? ITEM_ART[ht.id]() : T(110,68,70,ht.icon);
+  if(ht) s += (photo?`<g transform="translate(0 -22)">`:"") + (ITEM_ART[ht.id] ? ITEM_ART[ht.id]() : T(110,68,70,ht.icon)) + (photo?"</g>":"");
   s += `</g>`;
   if(hd && !small){ if(ITEM_ART[hd.id]) s += ITEM_ART[hd.id](); else if(hd.id==="w8") s += T(176,150,46,"✌️"); else s += T(174,256,48,hd.icon); }
   if(pt && !small){ const pc = PET_COLORS[a.petColor|0]; if(pc && pc.c){ s += petFilter(gid+"pc", pc.c) + T(36,304,56,pt.icon,`filter="url(#${gid}pc)"`); } else s += T(36,304,56,pt.icon); }
@@ -338,7 +372,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
 /* A small preview of a shop item, drawn on a starter avatar so the shop shows how it really looks */
 const THUMB_VB = {hat:[26,-6,168,176], glasses:[40,30,140,130], earrings:[30,40,160,150], face:[40,30,140,130], ears:[26,-6,168,176], hairacc:[26,-6,168,176], neck:[40,100,140,110], costume:[0,0,220,320], back:[0,0,220,320], aura:[0,0,220,320], held:[60,100,160,200], pet:[0,160,150,160], bg:[0,0,220,320]};
 function itemThumb(it, style){
-  const sty = STYLE_PRESETS[style==="boy"?"boy":"girl"];
+  const sty = Object.assign({}, STYLE_PRESETS[style==="boy"?"boy":"girl"], {photo:false});
   const eq = {bg:"bg0"}; eq[it.slot] = it.id;
   const vb = THUMB_VB[it.slot] || [0,0,220,320];
   return avatarSVG({avatar:Object.assign({}, AV_DEFAULT, sty), equipped:eq}, 92, "happy", {vb});

@@ -13,6 +13,14 @@ function profilesScreen(){
 const optRow = (label,key,arr,cur) => `<div style="margin:8px 0"><b>${label}</b><div class="row">${arr.map(([k,n])=>`<button class="opt ${cur===k?"on":"ghost"}" data-sel="${key}" data-val="${k}">${n}</button>`).join("")}</div></div>`;
 const swRow = (label,key,arr,cur) => `<div style="margin:8px 0"><b>${label}</b><div class="row">${arr.map((c,i)=>`<button class="sw ${cur===i?"on":""}" data-k="${key}" data-i="${i}" style="background:${c}"></button>`).join("")}</div></div>`;
 function lookEditor(av){
+  if(av.style!=="boy"){
+    const pick = optRow("Look","photo",[["1","📷 Picture look"],["0","🎨 Draw my own"]],isPhoto(av)?"1":"0");
+    if(isPhoto(av)) return pick + `<p style="font-size:16px;text-align:center">Your picture look keeps its hair, clothes and smile. Add accessories and pets in the shop!</p>`;
+    return pick + lookEditor2(av);
+  }
+  return lookEditor2(av);
+}
+function lookEditor2(av){
   return optRow("Avatar style","style",STYLES,av.style||"girl") + swRow("Skin","skin",SKIN,av.skin) + optRow("Hair style","hair",HAIRS,av.hair) + swRow("Hair colour","hairColor",HAIRC,av.hairColor)
        + optRow("Eyes","eyes",EYES,av.eyes) + swRow("Eye colour","eyeColor",EYEC,av.eyeColor) + optRow("Smile","mouth",MOUTHS,av.mouth);
 }
@@ -26,7 +34,11 @@ function clothesEditor(av){
 }
 function bindBasics(av, onChange){
   $$("[data-k]").forEach(b=>b.onclick=()=>{ av[b.dataset.k] = +b.dataset.i; onChange(); });
-  $$("[data-sel]").forEach(b=>b.onclick=()=>{ av[b.dataset.sel] = b.dataset.val; onChange(); });
+  $$("[data-sel]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.sel==="photo") av.photo = b.dataset.val==="1";
+    else if(b.dataset.sel==="style"){ Object.assign(av, STYLE_PRESETS[b.dataset.val]||{}); }
+    else av[b.dataset.sel] = b.dataset.val;
+    onChange(); });
 }
 function createProfile(){
   const draft = {name:"", avatar:Object.assign({}, AV_DEFAULT, STYLE_PRESETS.girl)};
@@ -123,7 +135,7 @@ function home(){
 let closetTab = "look";
 function shopGrid(slot, pack){
   const p = P(), req = slot==="bg"||slot==="theme";
-  return `<div class="grid">${ITEMS.filter(i=>i.slot===slot && (pack ? i.pack===pack : !i.pack)).map(it=>{
+  return `<div class="grid">${ITEMS.filter(i=>i.slot===slot && (pack ? i.pack===pack : !i.pack) && itemFits(i, p.avatar)).map(it=>{
     const own = p.owned.includes(it.id), on = p.equipped[slot]===it.id, can = p.points>=it.cost;
     return `<div class="item">${it.slot==="theme"?`<div style="font-size:42px">${it.icon}</div>`:`<div class="thumb">${itemThumb(it, p.avatar.style)}</div>`}<div>${it.name}</div>
       ${own ? `<button class="small ${on?"alt":"ok"}" data-eq="${it.id}">${on?(req?"In use":"Take off"):"Use it"}</button>`
@@ -135,10 +147,11 @@ function closet(){
   const tabs = CLOSET_TABS.map(([k,n])=>`<button class="opt ${closetTab===k?"on":"ghost"}" data-tab="${k}">${n}</button>`).join("");
   let body = "";
   if(closetTab==="look") body += `<div class="card" style="text-align:left">${lookEditor(p.avatar)}</div>`;
-  if(closetTab==="clothes") body += `<div class="card" style="text-align:left"><h3 style="text-align:center">My clothes</h3>${p.equipped.costume?`<p style="text-align:center;font-size:16px">A glam outfit is on. Take it off in "Glam outfits" below to show these clothes.</p>`:""}${clothesEditor(p.avatar)}</div>`;
+  if(closetTab==="clothes" && isPhoto(p.avatar)) body += `<div class="card"><h3>My clothes</h3><p style="font-size:17px">Your picture look comes with its own crochet top and pink cargo pants. Pick "🎨 Draw my own" under Look to change clothes.</p></div>`;
+  else if(closetTab==="clothes") body += `<div class="card" style="text-align:left"><h3 style="text-align:center">My clothes</h3>${p.equipped.costume?`<p style="text-align:center;font-size:16px">A glam outfit is on. Take it off in "Glam outfits" below to show these clothes.</p>`:""}${clothesEditor(p.avatar)}</div>`;
   if(closetTab==="fun" && p.equipped.pet) body += `<div class="card" style="text-align:left"><h3 style="text-align:center">Pet colour</h3>${swRow("Choose a colour for your pet","petColor",PET_SWATCH,p.avatar.petColor|0)}</div>`;
-  if(closetTab==="idol"){ body += `<div class="card"><h3>⭐ Idol &amp; Hunter</h3><p style="font-size:16px;margin:4px">Stage looks, glowing gear and a tiger cub for a star-and-spirit-hunter adventure!</p></div>`; IDOL_SLOTS.forEach(slot=>{ if(ITEMS.some(i=>i.slot===slot&&i.pack==="idol")) body += `<div class="card"><h3>${SLOTS[slot]}</h3>${shopGrid(slot,"idol")}</div>`; }); }
-  (TAB_SLOTS[closetTab]||[]).forEach(slot=>{ body += `<div class="card"><h3>${SLOTS[slot]}</h3>${shopGrid(slot)}</div>`; });
+  if(closetTab==="idol"){ body += `<div class="card"><h3>⭐ Idol &amp; Hunter</h3><p style="font-size:16px;margin:4px">Stage looks, glowing gear and a tiger cub for a star-and-spirit-hunter adventure!</p></div>`; IDOL_SLOTS.forEach(slot=>{ if(ITEMS.some(i=>i.slot===slot&&i.pack==="idol"&&itemFits(i,p.avatar))) body += `<div class="card"><h3>${SLOTS[slot]}</h3>${shopGrid(slot,"idol")}</div>`; }); }
+  (TAB_SLOTS[closetTab]||[]).forEach(slot=>{ if(!ITEMS.some(i=>i.slot===slot&&!i.pack&&itemFits(i,p.avatar))) return; body += `<div class="card"><h3>${SLOTS[slot]}</h3>${shopGrid(slot)}</div>`; });
   view(`<div class="closet"><div class="prev card"><h2>My Avatar</h2><div>${avatarSVG(p,260,moodNow)}</div><p style="font-size:20px;margin:6px">You have <b>⭐ ${p.points}</b></p><button class="ok" id="done">✔ Done</button></div>
     <div class="opts"><div class="row" style="margin-bottom:10px">${tabs}</div>${body}</div></div>`, ()=>{
     const keep = fn => { const y=window.scrollY; fn(); window.scrollTo(0,y); };
