@@ -33,7 +33,7 @@ const STYLES = [["girl","👧 Girl"],["boy","👦 Boy"]];
 const AV_DEFAULT = {eyeColor:0, skin:1, hair:"short", hairColor:1, eyes:"round", mouth:"smile", topStyle:"tee", top:1, bottomStyle:"shorts", bottom:1, dress:"none", shoes:0};
 
 const SLOTS = {ears:"Ears & horns", hat:"Hats", hairacc:"Hair bits", glasses:"Glasses", earrings:"Earrings", face:"Face sparkle", costume:"Glam outfits", neck:"Necklaces & scarves", back:"Capes & wings", aura:"Sparkle effects", held:"Hold something", pet:"Pets", bg:"Avatar scenes", theme:"App themes"};
-const IDOL_SLOTS = ["hat","glasses","neck","costume","held","aura","pet","bg"];
+const IDOL_SLOTS = ["hat","hairacc","glasses","neck","costume","held","aura","pet","bg"];
 const TAB_SLOTS = {clothes:["costume"], head:["ears","hat","hairacc","glasses","earrings","face"], glam:["neck","back","aura","held"], fun:["pet","bg"], theme:["theme"]};
 const CLOSET_TABS = [["look","Look"],["clothes","Clothes"],["head","Head & face"],["glam","Glam"],["fun","Pets & scenes"],["idol","⭐ Idol & Hunter"],["theme","App themes"]];
 
@@ -138,6 +138,9 @@ const ITEMS = [
   {id:"p4", slot:"pet", for:"girl", name:"Unicorn", icon:"🦄", cost:320},
   {id:"p8", slot:"pet", name:"Panda", icon:"🐼", cost:380},
   {id:"p5", slot:"pet", name:"Dragon", icon:"🐉", cost:480},
+  {id:"k_swirl", slot:"hairacc", pack:"idol", name:"Cinnamon swirl buns", icon:"🍥", cost:90},
+  {id:"k_roll", slot:"held", pack:"idol", name:"Cinnamon roll treat", icon:"🥐", cost:70},
+  {id:"k_cloud", slot:"neck", pack:"idol", name:"Sky cloud collar", icon:"☁️", cost:85},
   {id:"p9", slot:"pet", pack:"idol", name:"Tiger cub", icon:"🐯", cost:260},
   {id:"t0", slot:"theme", name:"Candy cloud", icon:"☁️", cost:0, bg:"linear-gradient(160deg,#ffd9ec,#d9ecff 55%,#fff3c4)", deco:["☁️","🎀","⭐","💖","🍭","🌸"]},
   {id:"t1", slot:"theme", name:"Rainbow sky", icon:"🌈", cost:120, bg:"linear-gradient(180deg,#a8e0ff,#e6d4ff 60%,#ffe0f1)", deco:["🌈","☁️","🦄","⭐","💫","🎈"]},
@@ -174,6 +177,10 @@ const ITEM_ART = {
   e5:()=>`<circle cx="62" cy="128" r="8" fill="none" stroke="#ff7eb6" stroke-width="3.2"/><circle cx="158" cy="128" r="8" fill="none" stroke="#ff7eb6" stroke-width="3.2"/>`,
   w7:()=>`<path d="M82 154 Q132 196 150 240" stroke="#f48fb1" stroke-width="6" fill="none" stroke-linecap="round"/><rect x="132" y="238" width="38" height="32" rx="7" fill="#f48fb1" stroke="#e0709b" stroke-width="2.5"/>${_daisy(151,254,7)}`,
   k_stick:()=>`<rect x="148" y="176" width="8" height="64" rx="4" fill="#e8e8f5" stroke="#9aa"/><circle cx="152" cy="164" r="22" fill="#ff2fa0" opacity=".25"/><circle cx="152" cy="164" r="14" fill="#ff2fa0" opacity=".5"/><polygon points="${_star(152,164,13,6)}" fill="#fff59d" stroke="#ff2fa0" stroke-width="2.5"/>`,
+  _swirl:(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#e0a96d" stroke="#a9692f" stroke-width="1.5"/><path d="M${cx} ${cy} m0 0 a${r*.2} ${r*.2} 0 1 1 ${r*.4} 0 a${r*.4} ${r*.4} 0 1 1 -${r*.8} 0 a${r*.6} ${r*.6} 0 1 1 ${r*1.2} 0 a${r*.8} ${r*.8} 0 1 1 -${r*1.6} 0" stroke="#8b4f1f" stroke-width="2" fill="none" stroke-linecap="round" transform="translate(${-r*.2} 0)"/><circle cx="${cx-r*.45}" cy="${cy-r*.45}" r="${r*.14}" fill="#fff" opacity=".8"/>`,
+  k_swirl:()=>ITEM_ART._swirl(70,62,17)+ITEM_ART._swirl(150,62,17),
+  k_roll:()=>ITEM_ART._swirl(172,236,22)+`<path d="M152 232 Q172 222 192 232" stroke="#fff" stroke-width="5" fill="none" opacity=".85" stroke-linecap="round"/>`,
+  k_cloud:()=>`<g fill="#e8f6ff" stroke="#9ccdf2" stroke-width="2"><circle cx="86" cy="160" r="12"/><circle cx="102" cy="168" r="14"/><circle cx="118" cy="168" r="14"/><circle cx="134" cy="160" r="12"/></g><g fill="#e8f6ff"><circle cx="102" cy="166" r="11"/><circle cx="118" cy="166" r="11"/><circle cx="92" cy="160" r="9"/><circle cx="128" cy="160" r="9"/></g>`,
   k_fan:()=>`<path d="M152 238 L112 196 Q152 160 192 196Z" fill="#ffd1ec" stroke="#c2338f" stroke-width="2.5"/>${[-30,-15,0,15,30].map(d=>`<line x1="152" y1="238" x2="${(152+58*Math.sin(d*Math.PI/180)).toFixed(1)}" y2="${(238-58*Math.cos(d*Math.PI/180)).toFixed(1)}" stroke="#c2338f" stroke-width="1.6"/>`).join("")}${T(152,206,18,"🌸")}`,
   k_blade:()=>`<path d="M152 238 L152 130" stroke="#27e0ff" stroke-width="12" stroke-linecap="round" opacity=".3"/><path d="M152 232 L152 134" stroke="#bff8ff" stroke-width="6" stroke-linecap="round"/><path d="M152 134 L146 124 L152 112 L158 124Z" fill="#fff"/><rect x="140" y="226" width="24" height="7" rx="3" fill="#7a3cff"/><rect x="148" y="233" width="8" height="16" rx="3" fill="#2b2d42"/>`
 };
@@ -278,6 +285,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(eq.neck==="n1") s += Array.from({length:9},(_,i)=>{ const th=Math.PI*i/8; return `<circle cx="${110-24*Math.cos(th)}" cy="${150+18*Math.sin(th)}" r="3.6" fill="#fff" stroke="#d6d6d6"/>`; }).join("");
   if(eq.neck==="k_ch") s += ITEM_ART.k_ch();
   if(eq.neck==="n5") s += ITEM_ART.n5();
+  if(eq.neck==="k_cloud") s += ITEM_ART.k_cloud();
   if(eq.neck==="bn2") s += `<path d="M92 150 Q110 190 128 150" stroke="#b0bec5" stroke-width="2.2" fill="none"/><rect x="102" y="178" width="16" height="22" rx="7" fill="#cfd8dc" stroke="#78909c" stroke-width="1.5"/><circle cx="110" cy="184" r="2" fill="#78909c"/>`;
   if(eq.neck==="n4") s += `<path d="M90 150 Q110 184 130 150" stroke="#ffd43b" stroke-width="2" fill="none"/>${T(110,184,20,"💖")}`;
   s += `<g transform="translate(110 150) scale(1.22) translate(-110 -150)"><ellipse cx="110" cy="148" rx="26" ry="8" fill="#000" opacity=".1"/><circle cx="64" cy="108" r="9" fill="${skin}"/><circle cx="64" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="156" cy="108" r="9" fill="${skin}"/><circle cx="156" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="110" cy="100" r="46" fill="url(#${gid}s)"/><ellipse cx="94" cy="72" rx="16" ry="7" fill="#fff" opacity=".14"/>`;
@@ -352,6 +360,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(eq.earrings==="e4") s += T(62,130,15,"⭐")+T(158,130,15,"⭐");
   // hair bits, glasses, hat
   const hb = eq.hairacc;
+  if(hb==="k_swirl") s += ITEM_ART.k_swirl();
   if(hb==="ha1") s += T(152,62,40,"🎀");
   if(hb==="ha2") s += T(72,66,32,"🌸");
   if(hb==="ha3") s += T(72,66,22,"⭐")+T(148,66,22,"⭐");
