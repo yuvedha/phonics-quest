@@ -122,3 +122,16 @@ const SCI_LEVELS_LAB = [
   {name:"Counting and charts", gens:[["sdata"]]},
   {name:"Science Lab challenge", gens:[["smix","forces","friction","light","sound","weather","sky","rocks","predict"],["magnet"],["sdata"]]}
 ];
+
+/* ---------- Learn pages (shown before the quiz, skippable) ---------- */
+(function(){
+  const chip = (s)=>`<span style="display:inline-block;margin:3px;padding:6px 12px;border-radius:14px;background:#e8f5e9;font-size:20px;font-weight:700">${s}</span>`;
+  const lifePages = Object.keys(SCI_LIFE).map(k=>_lpg("Life cycle: "+SCI_LIFE_NAME[k], `<div class="mvis" style="font-size:20px">${SCI_LIFE[k].map(chip).join("➜")}</div><p style="font-size:20px">A life cycle shows how a living thing grows and changes, step by step, from a baby to a grown-up.</p>`, `The life cycle of a ${SCI_LIFE_NAME[k]}: ${SCI_LIFE[k].join(", then ")}.`));
+  const magnetPage = _lpg("Magnets", `<p style="font-size:60px;margin:6px">🧲</p><p style="font-size:20px">A magnet pulls things made of <b>iron or steel</b>.<br>✅ Sticks: 📎 paper clip, 🔩 iron nail, 🔑 steel key, 🥫 steel can<br>❌ Does not stick: 🥄 wood, 🥤 plastic, 🪀 rubber, 🔮 glass, 📄 paper<br>A magnet has <b>2 poles</b>. Opposite poles <b>pull</b>, the same poles <b>push</b> apart.</p>`, "A magnet pulls things made of iron or steel. A paper clip, an iron nail, a steel key and a steel can stick to a magnet. Wood, plastic, rubber, glass and paper do not. A magnet has two poles. Opposite poles pull together, and the same poles push apart.");
+  const dataPage = _lpg("Reading a chart", `<div class="mvis" style="font-size:26px">🐶🐶🐶<br>🐱🐱<br>🐟🐟🐟🐟🐟</div><p style="font-size:20px">Count the pictures in each row.<br>🐶 = 3, 🐱 = 2, 🐟 = 5.<br>The row with <b>the most</b> pictures is 🐟. The row with <b>the fewest</b> is 🐱.<br>To find <b>how many more</b>, take away: 5 − 2 = 3.</p>`, "Count the pictures in each row. Dogs are three, cats are two, fish are five. The row with the most pictures is fish. The row with the fewest is cats. To find how many more, take away: five take away two is three.");
+  SCI_LEVELS_LIVING.forEach((L,i)=>{ if(L.gens[0][0]==="sfact") L.learn = _factPages(SCI[L.gens[0][1]], 4, "Science facts"); });
+  SCI_LEVELS_LIVING[2].learn = lifePages;
+  SCI_LEVELS_LAB.forEach((L,i)=>{ if(L.gens[0][0]==="sfact") L.learn = _factPages(SCI[L.gens[0][1]], 4, "Science facts"); });
+  SCI_LEVELS_LAB[2].learn = [magnetPage].concat(_factPages(SCI.magnets, 4, "Magnet facts"));
+  SCI_LEVELS_LAB[9].learn = [dataPage];
+})();

@@ -92,3 +92,33 @@ const WONDER_LEVELS = [
   {name:"Wonder quiz: mixed 1", gens:[["mixed"]]},
   {name:"Wonder quiz: mixed 2", gens:[["mixed"]]}
 ];
+
+/* ---------- Learn pages (shown before the quiz, skippable) ---------- */
+const _lpg = (title, html, say)=>({title, html, say});
+function _factPages(bank, per, label){
+  const pages = []; const n = Math.ceil(bank.length/per);
+  for(let k=0;k<n;k++){
+    const part = bank.slice(k*per,(k+1)*per);
+    pages.push(_lpg(`${label||"Did you know?"} (${k+1}/${n})`,
+      part.map(f=>`<div style="text-align:left;margin:10px 4px;font-size:19px">${f[3]||"❓"} ${f[0]}<br>&nbsp;&nbsp;&nbsp;➜ <b>${f[1]}</b></div>`).join(""),
+      part.map(f=>`${f[0]} ${f[1]}.`).join(" ")));
+  }
+  return pages;
+}
+const _clk = (h,m)=>`<div class="mvis">${_svgClock(h,m)}</div>`;
+const _TIME_CHEAT = _lpg("Clock cheat sheet", `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px">${[[3,0,"o'clock"],[3,30,"half past"],[3,15,"quarter past"],[3,45,"quarter to"]].map(c=>`<div style="width:46%">${_miniClock(c[0],c[1])}<div style="font-size:18px"><b>${c[2]}</b><br>${_tfmt(c[0],c[1])}</div></div>`).join("")}</div>`, "Long hand on 12 is o'clock. Long hand on 6 is half past. Long hand on 3 is quarter past. Long hand on 9 is quarter to.");
+const _TIME_HANDS = _lpg("The two hands", _clk(3,0)+`<p style="font-size:20px">A clock has <b>two hands</b>.<br>The <b>short</b> hand tells the <b>hour</b>.<br>The <b>long</b> hand tells the <b>minutes</b>.</p>`, "A clock has two hands. The short hand tells the hour. The long hand tells the minutes.");
+const _TIME_OCLOCK = _lpg("O'clock", _clk(7,0)+`<p style="font-size:20px">When the <b>long hand points to 12</b>, it is an <b>o'clock</b> time.<br>The short hand points to 7, so it is <b>7 o'clock</b>.</p>`, "When the long hand points to twelve, it is an o'clock time. The short hand points to seven, so it is seven o'clock.");
+const _TIME_HALF = _lpg("Half past", _clk(8,30)+`<p style="font-size:20px">When the <b>long hand points to 6</b>, it is <b>half past</b>.<br>The short hand is just past 8, so it is <b>half past 8</b>.<br>Half an hour is <b>30 minutes</b>.</p>`, "When the long hand points to six, it is half past. The short hand is just past eight, so it is half past eight. Half an hour is thirty minutes.");
+const _TIME_QP = _lpg("Quarter past", _clk(4,15)+`<p style="font-size:20px">When the <b>long hand points to 3</b>, it is <b>quarter past</b>.<br>It is <b>quarter past 4</b>, or 4:15.</p>`, "When the long hand points to three, it is quarter past. This is quarter past four, or four fifteen.");
+const _TIME_QT = _lpg("Quarter to", _clk(4,45)+`<p style="font-size:20px">When the <b>long hand points to 9</b>, it is <b>quarter to</b> the next hour.<br>It is almost 5, so it is <b>quarter to 5</b>, or 4:45.</p>`, "When the long hand points to nine, it is quarter to the next hour. It is almost five, so it is quarter to five, or four forty five.");
+const _TIME_FIVES = _lpg("Counting by fives", `<div class="mvis">${_svgClock(12,0)}</div><p style="font-size:20px">Each number on the clock is <b>5 minutes</b> more.<br>1 = 5, 2 = 10, 3 = 15, 4 = 20, 5 = 25, 6 = 30 ...<br>Count by fives to read the minutes!</p>`, "Each number on the clock is five minutes more. One is five, two is ten, three is fifteen, four is twenty, five is twenty five, six is thirty. Count by fives to read the minutes.");
+const _TIME_FIVE_EX = _lpg("Example", _clk(4,10)+`<p style="font-size:20px">The long hand is on <b>2</b>. Count by fives: 5, 10.<br>It is <b>10 past 4</b>, or 4:10.</p>`, "The long hand is on two. Count by fives: five, ten. It is ten past four, or four ten.");
+const _TIME_DAY = _lpg("Parts of the day", `<p style="font-size:24px;line-height:1.7">🌅 <b>Morning</b>: wake up, breakfast<br>☀️ <b>Afternoon</b>: lunch, school ends<br>🌇 <b>Evening</b>: dinner, bath, story<br>🌙 <b>Night</b>: stars out, sleep<br>🕛 12 o'clock in the day is <b>noon</b>, and 12 o'clock at night is <b>midnight</b></p>`, "Morning is when we wake up and have breakfast. Afternoon is lunch and school ends. Evening is dinner, bath and a story. Night is when the stars are out and we sleep. Twelve o'clock in the day is noon, and twelve o'clock at night is midnight.");
+const _TIME_DUR = _lpg("How long does it take?", `<div class="mvis">${_svgClock(3,0).replace('width="170" height="170"','width="110" height="110"')} ➜ ${_svgClock(5,0).replace('width="170" height="170"','width="110" height="110"')}</div><p style="font-size:20px">From <b>3 o'clock</b> to <b>5 o'clock</b> is <b>2 hours</b>.<br>Count how many hours the short hand moves!<br>1 hour later than 3 o'clock is 4 o'clock.</p>`, "From three o'clock to five o'clock is two hours. Count how many hours the short hand moves. One hour later than three o'clock is four o'clock.");
+const _TIME_CAL = [_lpg("Days of the week", `<p style="font-size:22px;line-height:1.6"><b>7 days</b> in a week:<br>Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday<br>Saturday and Sunday are the <b>weekend</b>.</p>`, "There are seven days in a week: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. Saturday and Sunday are the weekend."),
+  _lpg("Months of the year", `<p style="font-size:20px;line-height:1.6"><b>12 months</b> in a year:<br>January, February, March, April, May, June,<br>July, August, September, October, November, December</p>`, "There are twelve months in a year: January, February, March, April, May, June, July, August, September, October, November, December."),
+  _lpg("Seasons in Australia", `<p style="font-size:22px;line-height:1.7">☀️ <b>Summer</b>: December, January, February<br>🍂 <b>Autumn</b>: March, April, May<br>❄️ <b>Winter</b>: June, July, August<br>🌸 <b>Spring</b>: September, October, November</p>`, "In Australia, summer is December, January and February. Autumn is March, April and May. Winter is June, July and August. Spring is September, October and November.")];
+const _TL = [[_TIME_HANDS,_TIME_OCLOCK],[_TIME_HANDS,_TIME_OCLOCK],[_TIME_HALF],[_TIME_QP,_TIME_QT],[_TIME_CHEAT],[_TIME_CHEAT],[_TIME_DAY],[_TIME_FIVES,_TIME_FIVE_EX],[_TIME_DUR],_TIME_CAL];
+_TL.forEach((pg,i)=>{ TIME_LEVELS[i].learn = pg; });
+(function(){ const keys = Object.keys(FACTS); WONDER_LEVELS.forEach((L,i)=>{ if(i<keys.length) L.learn = _factPages(FACTS[keys[i]], 4, "Did you know?"); }); })();
