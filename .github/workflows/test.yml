@@ -13,4 +13,5 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run lint
       - run: npm run smoke
+      - run: npm run gate
       - run: npm run playthrough:full

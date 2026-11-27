@@ -1,6 +1,7 @@
 /* =============================================================
    START
    ============================================================= */
+try{ if(!localStorage.getItem(PIN_MODE_KEY)) localStorage.setItem(PIN_MODE_KEY, DB.profiles.length ? "legacy" : "new"); }catch(e){}   // existing installs keep the built-in PIN until changed
 if(typeof Cloud!=="undefined" && Cloud.on) Cloud.init().then(async u=>{ if(!u) return; const ch = await cloudSync(); if(ch){ if(P() && document.querySelector("#closet")) home(); else if(!P() && DB.profiles.length) profilesScreen(); } }).catch(()=>{});
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 var INSTALL = null;

@@ -13,6 +13,14 @@ const MOUTHS = [["smile","Smile"],["grin","Big grin"],["cat","Cat smile"],["tong
 const TOPS = [["tee","T-shirt"],["long","Long sleeve"],["hoodie","Hoodie"],["tank","Tank top"]];
 const BOTTOMS = [["shorts","Shorts"],["pants","Pants"],["skirt","Skirt"],["leggings","Leggings"]];
 const DRESSES = [["none","No dress"],["twirl","Twirly dress"],["tutu","Tutu dress"],["party","Party dress"]];
+/* Pet colour: the pet emoji is tinted with an SVG colour filter (null = its natural colours) */
+const PET_COLORS = [{n:"Natural",c:null},{n:"Pink",c:"#ff7eb6"},{n:"Purple",c:"#9b5de5"},{n:"Blue",c:"#4ea8de"},{n:"Green",c:"#52b788"},{n:"Gold",c:"#ffc300"},{n:"Red",c:"#ef476f"},{n:"White",c:"#f7f7f7"},{n:"Black",c:"#4a4a4a"}];
+const PET_SWATCH = PET_COLORS.map(x=>x.c || "linear-gradient(135deg,#ff7eb6,#ffc300,#52b788,#4ea8de)");
+function petFilter(id, hex){
+  const n = parseInt(hex.slice(1),16), r = (n>>16&255)/255, g = (n>>8&255)/255, b = (n&255)/255, k = 1.35, f = v=>v.toFixed(3);
+  const row = c=>`${f(.3*c*k)} ${f(.59*c*k)} ${f(.11*c*k)} 0 0`;
+  return `<defs><filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values="${row(r)} ${row(g)} ${row(b)} 0 0 0 1 0" result="t"/><feComposite in="t" in2="SourceGraphic" operator="arithmetic" k1="0" k2="0.85" k3="0.15" k4="0"/></filter></defs>`;
+}
 const AV_DEFAULT = {eyeColor:0, skin:1, hair:"short", hairColor:1, eyes:"round", mouth:"smile", topStyle:"tee", top:1, bottomStyle:"shorts", bottom:1, dress:"none", shoes:0};
 
 const SLOTS = {ears:"Ears & horns", hat:"Hats", hairacc:"Hair bits", glasses:"Glasses", earrings:"Earrings", face:"Face sparkle", costume:"Glam outfits", neck:"Necklaces & scarves", back:"Capes & wings", aura:"Sparkle effects", held:"Hold something", pet:"Pets", bg:"Avatar scenes", theme:"App themes"};
@@ -257,7 +265,7 @@ function avatarSVG(p, size=190, mood="happy"){
   if(gl) s += T(110,114,58,gl.icon);
   if(ht) s += T(110,68,70,ht.icon);
   if(hd && !small) s += T(174,256,48,hd.icon);
-  if(pt && !small) s += T(36,304,56,pt.icon);
+  if(pt && !small){ const pc = PET_COLORS[a.petColor|0]; if(pc && pc.c){ s += petFilter(gid+"pc", pc.c) + T(36,304,56,pt.icon,`filter="url(#${gid}pc)"`); } else s += T(36,304,56,pt.icon); }
   return s + `</svg>`;
 }
 

@@ -110,7 +110,7 @@ function home(){
     $$("[data-subj]").forEach(b=>b.onclick=()=>subjectScreen(b.dataset.subj));
     $("#switch").onclick = profilesScreen; $("#grown").onclick = grownUp;
     const fo = $("#fsOn"); if(fo) fo.onclick = async()=>{ await fsAllow(); home(); };
-    const bk = $("#bk"); if(bk) bk.onclick = ()=>{ if(askPin("Grown-up PIN to save a backup:")){ downloadBackup(); home(); } };
+    const bk = $("#bk"); if(bk) bk.onclick = ()=>{ askPin("Save a backup", ()=>{ downloadBackup(); home(); }); };
     const bl = $("#bklater"); if(bl) bl.onclick = ()=>{ p.snoozeUntil = addDaysStr(2); saveDB(); home(); };
   });
 }
@@ -134,6 +134,7 @@ function closet(){
   let body = "";
   if(closetTab==="look") body += `<div class="card" style="text-align:left">${lookEditor(p.avatar)}</div>`;
   if(closetTab==="clothes") body += `<div class="card" style="text-align:left"><h3 style="text-align:center">My clothes</h3>${p.equipped.costume?`<p style="text-align:center;font-size:16px">A glam outfit is on. Take it off in "Glam outfits" below to show these clothes.</p>`:""}${clothesEditor(p.avatar)}</div>`;
+  if(closetTab==="fun" && p.equipped.pet) body += `<div class="card" style="text-align:left"><h3 style="text-align:center">Pet colour</h3>${swRow("Choose a colour for your pet","petColor",PET_SWATCH,p.avatar.petColor|0)}</div>`;
   (TAB_SLOTS[closetTab]||[]).forEach(slot=>{ body += `<div class="card"><h3>${SLOTS[slot]}</h3>${shopGrid(slot)}</div>`; });
   view(`<div class="closet"><div class="prev card"><h2>My Avatar</h2><div>${avatarSVG(p,260,moodNow)}</div><p style="font-size:20px;margin:6px">You have <b>⭐ ${p.points}</b></p><button class="ok" id="done">✔ Done</button></div>
     <div class="opts"><div class="row" style="margin-bottom:10px">${tabs}</div>${body}</div></div>`, ()=>{

@@ -37,3 +37,9 @@ Run `npm install` once, then:
 - `npm run playthrough`: plays the first, middle and last level of every chapter (generated chapters with every answer correct). `npm run playthrough:full` does every level.
 - `npm test` runs lint, smoke and the quick play-through. GitHub runs lint, smoke and the full play-through on every push (see the Actions tab).
 When you add a new file, also add it to `index.html` and to `FILES` in `sw.js`, and change the `CACHE` name in `sw.js` so devices pick up the update.
+
+## Grown-up PIN, parent gate and privacy
+- Each family sets their own **grown-up PIN** (stored as a salted hash in the browser). Existing installs keep the built-in PIN until it is changed; new installs are asked to create one on first use. The Grown-up corner has "Change grown-up PIN".
+- **Parent gate**: a grown-up maths question before anything that opens a web page outside the game (`openExternal` in `js/helpers.js`).
+- `privacy.html` is the privacy policy (linked from the Grown-up corner, needed for the App Store). Cloud sync users can delete their online account from the Grown-up corner.
+- **Pet colour**: pets in the avatar shop can be tinted (`PET_COLORS` in `js/avatar-data.js`).

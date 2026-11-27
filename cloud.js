@@ -9,6 +9,7 @@ const Cloud = (()=>{
     if(/weak-password/.test(c)) return "Please use a password with at least 6 characters.";
     if(/email-already-in-use/.test(c)) return "That email already has an account. Try Sign in instead.";
     if(/user-not-found|wrong-password|invalid-credential/.test(c)) return "Email or password not right.";
+    if(/requires-recent-login/.test(c)) return "For safety, sign out, sign in again, then delete the account straight away.";
     if(/network/.test(c)) return "Couldn't reach the internet. Try again later.";
     if(/too-many-requests/.test(c)) return "Too many tries. Wait a minute and try again.";
     return "Something went wrong (" + (c || (e && e.message) || "unknown") + ").";
@@ -32,6 +33,7 @@ const Cloud = (()=>{
     signUp: (e,p)=>guard(()=>A.createUserWithEmailAndPassword(auth,e,p)),
     signOut: ()=>guard(()=>A.signOut(auth)),
     pull: ()=>guard(async()=>{ const s = await F.getDoc(F.doc(db,"users",user.uid)); return s.exists() ? JSON.parse(s.data().data) : null; }),
+    deleteAll: ()=>guard(async()=>{ await F.deleteDoc(F.doc(db,"users",user.uid)); await A.deleteUser(auth.currentUser); }),
     push: obj=>guard(()=>F.setDoc(F.doc(db,"users",user.uid), {updated: Date.now(), data: JSON.stringify(obj)}))
   };
 })();

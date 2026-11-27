@@ -6,7 +6,8 @@
     "smoke": "node tests/smoke.js",
     "playthrough": "node tests/playthrough.js",
     "playthrough:full": "FULL=1 node tests/playthrough.js",
-    "test": "node tests/lint-content.js && node tests/smoke.js && node tests/playthrough.js"
+    "gate": "node tests/gate.js",
+    "test": "node tests/lint-content.js && node tests/smoke.js && node tests/gate.js && node tests/playthrough.js"
   },
   "devDependencies": { "playwright": "^1.48.0" }
 }

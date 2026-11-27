@@ -1,11 +1,11 @@
 /* =============================================================
    GROWN-UP CORNER
    ============================================================= */
-function grownUp(){ if(!askPin()) return; showGrownUp(); }
+function grownUp(){ askPin("Grown-up corner", showGrownUp); }
 function cloudSection(){
   if(typeof Cloud==="undefined" || !Cloud.on) return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">Not turned on. It would let progress follow her to other devices. See SETUP-CLOUD.md in the project to switch it on.</p>`;
   if(!Cloud.user()) return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">Not signed in.</p><button class="small ok" id="cloudIn">Sign in or create account</button>`;
-  return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">✅ Signed in as <b>${esc(Cloud.email())}</b>. ${CS.last?"Last synced "+new Date(CS.last).toLocaleTimeString():"Not synced yet this visit."}${CS.msg?`<br><span style="color:#c2233f">${esc(CS.msg)}</span>`:""}</p><button class="small ok" id="cloudNow">🔄 Sync now</button><button class="small ghost" id="cloudOut">Sign out</button>`;
+  return `<h3>☁️ Cloud sync</h3><p style="font-size:18px">✅ Signed in as <b>${esc(Cloud.email())}</b>. ${CS.last?"Last synced "+new Date(CS.last).toLocaleTimeString():"Not synced yet this visit."}${CS.msg?`<br><span style="color:#c2233f">${esc(CS.msg)}</span>`:""}</p><button class="small ok" id="cloudNow">🔄 Sync now</button><button class="small ghost" id="cloudOut">Sign out</button><button class="small alt" id="cloudDel">Delete my cloud account</button>`;
 }
 /* =============================================================
    GROWN-UP PROGRESS REPORT: strengths, areas to improve and suggestions
@@ -104,9 +104,13 @@ function showGrownUp(){
     <h3>Backup</h3><p style="font-size:18px">Last backup: <b>${p.lastBackup||"never"}</b>. The home screen reminds you each week.</p><h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
     <div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
     <input type="file" id="file" accept=".json" style="display:none">
-    <button class="small alt" id="del">Delete this player</button></div>`, ()=>{
+    <button class="small alt" id="del">Delete this player</button>
+    <h3>Security and privacy</h3><div class="row"><button class="small ghost" id="chpin">🔑 Change grown-up PIN</button><button class="small ghost" id="priv">🔒 Privacy policy</button></div></div>`, ()=>{
       $("#rep").onclick = reportScreen;
-      $("#del").onclick = ()=>{ if(confirm("Delete "+p.name+" and all their progress?")){ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); } };
+      $("#del").onclick = ()=>askConfirm("Delete "+p.name+" and all their progress on this device?", "Delete", ()=>{ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); });
+      $("#chpin").onclick = ()=>setPinDialog("Change grown-up PIN", showGrownUp);
+      $("#priv").onclick = ()=>openExternal(new URL("privacy.html", location.href).href);
+      const cd = $("#cloudDel"); if(cd) cd.onclick = ()=>askConfirm("Delete your cloud account and everything saved online? Progress on this device stays.", "Delete account", async()=>{ const r = await Cloud.deleteAll(); if(!r.ok){ CS.msg = r.error; } else { CS.msg = ""; } showGrownUp(); });
       $("#exp").onclick = ()=>{ downloadBackup(); showGrownUp(); };
       const ins = $("#inst"); if(ins) ins.onclick = async()=>{ INSTALL.prompt(); await INSTALL.userChoice; INSTALL = null; showGrownUp(); };
       const ci = $("#cloudIn"); if(ci) ci.onclick = ()=>cloudSignInScreen();

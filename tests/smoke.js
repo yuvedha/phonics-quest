@@ -15,6 +15,8 @@ const URL = "file://" + path.resolve(__dirname, "..", "index.html");
   await p.waitForTimeout(400);
   const ok = await p.evaluate(() => typeof CH === "object" && Object.keys(CH).length >= 14 && typeof DB === "object");
   if (!ok) errs.push("app did not initialise (CH/DB missing)");
+  const pet = await p.evaluate(() => { const pr = { avatar: { petColor: 3 }, equipped: { pet: "p1" } }; const svg = avatarSVG(pr, 200); return /<filter/.test(svg) && /feColorMatrix/.test(svg) && !/<filter/.test(avatarSVG({ avatar: { petColor: 0 }, equipped: { pet: "p1" } }, 200)); });
+  if (!pet) errs.push("pet colour filter missing or applied to a natural pet");
   await b.close();
   if (errs.length) { console.log("SMOKE FAIL\n" + errs.join("\n")); process.exit(1); }
   console.log("smoke ok");
