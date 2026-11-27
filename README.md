@@ -46,3 +46,6 @@ When you add a new file, also add it to `index.html` and to `FILES` in `sw.js`, 
 
 ## Avatar
 New players choose Girl or Boy first; each starts from a reference-inspired look (`STYLE_PRESETS`). Hair, top and trousers use gradients for a glossy finish, and the shop shows each item on a starter avatar (`itemThumb`). The Idol & Hunter pack is original artwork (no film characters, logos or brand marks).
+
+### Boy and girl items
+Items may have `for:"boy"|"girl"`; `itemFits()` filters the shop and the avatar. Hair styles are listed per style (`BOY_HAIRS`, `GIRL_HAIRS`, `hairsFor`). Choosing Boy or Girl in the Look tab applies that style's starter look.

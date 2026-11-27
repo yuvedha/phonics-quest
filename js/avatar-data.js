@@ -7,7 +7,10 @@ const TOPC  = ["#ff6b9d","#4dabf7","#51cf66","#ffd43b","#9775fa","#ff922b","#2ec
 const BOTC  = ["#3b5bdb","#1c7ed6","#2b2d42","#ff6b9d","#9775fa","#51cf66","#ffd43b","#e8590c","#f1f3f5","#845ef7","#f7b6cf","#f2a0bf","#d8c3a5"];
 const EYEC  = ["#5b3a1e","#2b1b10","#a8742c","#2e9e5b","#3a7bd5","#8d99ae","#9b5de5","#e0457b","#c98a0e","#1fa8a0"];
 const SHOEC = ["#ffffff","#ff6b9d","#4dabf7","#2b2d42","#ffd43b","#9775fa","#f4a6c0","#27e0ff"];
-const HAIRS = [["short","Short"],["bob","Bob"],["long","Long"],["wavy","Wavy"],["bun","Top bun"],["spacebuns","Space buns"],["dollwave","Long waves"],["quiff","Quiff"],["curly","Curly"],["afro","Afro puff"],["pigtails","Pigtails"],["ponytail","Ponytail"],["braid","Braid"],["puffs","Puffs"],["mohawk","Mohawk"],["none","Bald"]];
+const HAIRS = [["short","Short"],["bob","Bob"],["long","Long"],["wavy","Wavy"],["bun","Top bun"],["spacebuns","Space buns"],["dollwave","Long waves"],["quiff","Quiff"],["curly","Curly"],["afro","Afro puff"],["pigtails","Pigtails"],["ponytail","Ponytail"],["braid","Braid"],["puffs","Puffs"],["mohawk","Mohawk"],["none","Bald"],["spiky","Spiky"],["sidepart","Side part"],["buzz","Buzz cut"]];
+const BOY_HAIRS = ["quiff","short","spiky","sidepart","buzz","curly","afro","mohawk","none"];
+const GIRL_HAIRS = ["dollwave","long","wavy","bob","bun","spacebuns","pigtails","ponytail","braid","puffs","short","curly","afro"];
+const hairsFor = style => HAIRS.filter(([k])=>(style==="boy"?BOY_HAIRS:GIRL_HAIRS).includes(k)).sort((x,y)=>(style==="boy"?BOY_HAIRS:GIRL_HAIRS).indexOf(x[0])-(style==="boy"?BOY_HAIRS:GIRL_HAIRS).indexOf(y[0]));
 const EYES  = [["round","Round"],["sparkle","Sparkly"],["happy","Happy"],["lashes","Lashes"],["stars","Star eyes"],["hearts","Heart eyes"],["wink","Wink"],["sleepy","Sleepy"]];
 const MOUTHS = [["smile","Smile"],["grin","Big grin"],["cat","Cat smile"],["tongue","Cheeky"]];
 const TOPS = [["tee","T-shirt"],["long","Long sleeve"],["hoodie","Hoodie"],["tank","Tank top"],["crochet","Crochet crop top"]];
@@ -56,22 +59,22 @@ const ITEMS = [
   {id:"h5", slot:"hat", name:"Top hat", icon:"🎩", cost:170},
   {id:"h6", slot:"hat", name:"Graduation cap", icon:"🎓", cost:240},
   {id:"h7", slot:"hat", name:"Crown", icon:"👑", cost:350},
-  {id:"h8", slot:"hat", name:"Daisy crochet bandana", icon:"🧶", cost:140},
+  {id:"h8", slot:"hat", for:"girl", name:"Daisy crochet bandana", icon:"🧶", cost:140},
   {id:"k_hp", slot:"hat", pack:"idol", name:"Idol headphones", icon:"🎧", cost:120},
-  {id:"ha1", slot:"hairacc", name:"Big bow", icon:"🎀", cost:30},
-  {id:"ha2", slot:"hairacc", name:"Flower clip", icon:"🌸", cost:40},
-  {id:"ha3", slot:"hairacc", name:"Star clips", icon:"⭐", cost:60},
-  {id:"ha4", slot:"hairacc", name:"Butterfly clip", icon:"🦋", cost:90},
-  {id:"ha5", slot:"hairacc", name:"Gold headband", icon:"✨", cost:150},
+  {id:"ha1", slot:"hairacc", for:"girl", name:"Big bow", icon:"🎀", cost:30},
+  {id:"ha2", slot:"hairacc", for:"girl", name:"Flower clip", icon:"🌸", cost:40},
+  {id:"ha3", slot:"hairacc", for:"girl", name:"Star clips", icon:"⭐", cost:60},
+  {id:"ha4", slot:"hairacc", for:"girl", name:"Butterfly clip", icon:"🦋", cost:90},
+  {id:"ha5", slot:"hairacc", for:"girl", name:"Gold headband", icon:"✨", cost:150},
   {id:"g1", slot:"glasses", name:"Round glasses", icon:"👓", cost:35},
   {id:"g2", slot:"glasses", name:"Cool shades", icon:"🕶️", cost:90},
   {id:"g3", slot:"glasses", name:"Goggles", icon:"🥽", cost:200},
   {id:"k_sh", slot:"glasses", pack:"idol", name:"Star stage shades", icon:"🌟", cost:140},
   {id:"e1", slot:"earrings", name:"Gold studs", icon:"🟡", cost:30},
-  {id:"e3", slot:"earrings", name:"Heart earrings", icon:"❤️", cost:55},
-  {id:"e4", slot:"earrings", name:"Star earrings", icon:"⭐", cost:75},
-  {id:"e2", slot:"earrings", name:"Gold hoops", icon:"⭕", cost:120},
-  {id:"e5", slot:"earrings", name:"Pink hoops", icon:"🩷", cost:60},
+  {id:"e3", slot:"earrings", for:"girl", name:"Heart earrings", icon:"❤️", cost:55},
+  {id:"e4", slot:"earrings", for:"girl", name:"Star earrings", icon:"⭐", cost:75},
+  {id:"e2", slot:"earrings", for:"girl", name:"Gold hoops", icon:"⭕", cost:120},
+  {id:"e5", slot:"earrings", for:"girl", name:"Pink hoops", icon:"🩷", cost:60},
   {id:"f1", slot:"face", name:"Freckles", icon:"🟤", cost:20},
   {id:"f2", slot:"face", name:"Sparkle cheeks", icon:"✨", cost:40},
   {id:"f3", slot:"face", name:"Star sticker", icon:"⭐", cost:60},
@@ -79,17 +82,31 @@ const ITEMS = [
   {id:"f5", slot:"face", name:"Face gems", icon:"💎", cost:140},
   {id:"f6", slot:"face", name:"Glitter", icon:"🌟", cost:200},
   {id:"o_hero", slot:"costume", name:"Hero suit", icon:"🦸", cost:160},
-  {id:"o_disco", slot:"costume", name:"Disco sparkle dress", icon:"🪩", cost:240},
+  {id:"o_disco", slot:"costume", for:"girl", name:"Disco sparkle dress", icon:"🪩", cost:240},
   {id:"o_astro", slot:"costume", name:"Astronaut suit", icon:"🧑‍🚀", cost:300},
-  {id:"o_gown", slot:"costume", name:"Princess gown", icon:"👸", cost:420},
-  {id:"o_mermaid", slot:"costume", name:"Mermaid tail", icon:"🧜‍♀️", cost:560},
+  {id:"o_gown", slot:"costume", for:"girl", name:"Princess gown", icon:"👸", cost:420},
+  {id:"o_mermaid", slot:"costume", for:"girl", name:"Mermaid tail", icon:"🧜‍♀️", cost:560},
   {id:"o_idol", slot:"costume", pack:"idol", name:"Stage idol outfit", icon:"🎤", cost:280},
   {id:"o_hunter", slot:"costume", pack:"idol", name:"Spirit hunter outfit", icon:"⚔️", cost:320},
   {id:"n3", slot:"neck", name:"Cosy scarf", icon:"🧣", cost:40},
   {id:"n2", slot:"neck", name:"Bow tie", icon:"🎀", cost:50},
-  {id:"n4", slot:"neck", name:"Heart pendant", icon:"💖", cost:80},
-  {id:"n1", slot:"neck", name:"Pearl necklace", icon:"🦪", cost:160},
-  {id:"n5", slot:"neck", name:"Crown chain", icon:"🔗", cost:90},
+  {id:"n4", slot:"neck", for:"girl", name:"Heart pendant", icon:"💖", cost:80},
+  {id:"n1", slot:"neck", for:"girl", name:"Pearl necklace", icon:"🦪", cost:160},
+  {id:"n5", slot:"neck", for:"boy", name:"Crown chain", icon:"🔗", cost:90},
+  {id:"bn2", slot:"neck", for:"boy", name:"Dog tag", icon:"🏷️", cost:70},
+  {id:"bc1", slot:"hat", for:"boy", name:"Backwards cap", icon:"🧢", cost:60},
+  {id:"bc2", slot:"hat", for:"boy", name:"Hard hat", icon:"⛑️", cost:110},
+  {id:"bc3", slot:"hat", for:"boy", name:"Top hat", icon:"🎩", cost:180},
+  {id:"bg1", slot:"glasses", for:"boy", name:"Sporty visor", icon:"🥽", cost:120},
+  {id:"w9", slot:"held", for:"boy", name:"Football", icon:"🏈", cost:40},
+  {id:"w10", slot:"held", for:"boy", name:"Skateboard", icon:"🛹", cost:110},
+  {id:"w11", slot:"held", for:"boy", name:"Basketball", icon:"🏀", cost:60},
+  {id:"w12", slot:"held", for:"boy", name:"Robot", icon:"🤖", cost:240},
+  {id:"w13", slot:"held", for:"boy", name:"Soccer ball", icon:"⚽", cost:50},
+  {id:"p10", slot:"pet", for:"boy", name:"Dinosaur", icon:"🦖", cost:300},
+  {id:"p11", slot:"pet", for:"boy", name:"Wolf pup", icon:"🐺", cost:260},
+  {id:"o_soccer", slot:"costume", for:"boy", name:"Soccer kit", icon:"⚽", cost:200},
+  {id:"o_ninja", slot:"costume", for:"boy", name:"Ninja suit", icon:"🥷", cost:260},
   {id:"k_ch", slot:"neck", pack:"idol", name:"Idol choker", icon:"🖤", cost:70},
   {id:"b1", slot:"back", name:"Red cape", icon:"🦸", cost:100},
   {id:"b2", slot:"back", name:"Butterfly wings", icon:"🦋", cost:230},
@@ -103,11 +120,11 @@ const ITEMS = [
   {id:"a_neon", slot:"aura", pack:"idol", name:"Neon stage lights", icon:"💜", cost:260},
   {id:"w1", slot:"held", name:"Flower", icon:"🌷", cost:20},
   {id:"w2", slot:"held", name:"Balloon", icon:"🎈", cost:45},
-  {id:"w3", slot:"held", name:"Magic wand", icon:"🪄", cost:85},
+  {id:"w3", slot:"held", for:"girl", name:"Magic wand", icon:"🪄", cost:85},
   {id:"w4", slot:"held", name:"Ice cream", icon:"🍦", cost:120},
   {id:"w5", slot:"held", name:"Guitar", icon:"🎸", cost:190},
   {id:"w6", slot:"held", name:"Trophy", icon:"🏆", cost:320},
-  {id:"w7", slot:"held", name:"Crochet daisy bag", icon:"👜", cost:130},
+  {id:"w7", slot:"held", for:"girl", name:"Crochet daisy bag", icon:"👜", cost:130},
   {id:"w8", slot:"held", name:"Peace sign", icon:"✌️", cost:15},
   {id:"k_mic", slot:"held", pack:"idol", name:"Idol microphone", icon:"🎤", cost:100},
   {id:"k_stick", slot:"held", pack:"idol", name:"Neon light stick", icon:"✨", cost:150},
@@ -118,7 +135,7 @@ const ITEMS = [
   {id:"p3", slot:"pet", name:"Bunny", icon:"🐰", cost:150},
   {id:"p6", slot:"pet", name:"Penguin", icon:"🐧", cost:190},
   {id:"p7", slot:"pet", name:"Fox", icon:"🦊", cost:220},
-  {id:"p4", slot:"pet", name:"Unicorn", icon:"🦄", cost:320},
+  {id:"p4", slot:"pet", for:"girl", name:"Unicorn", icon:"🦄", cost:320},
   {id:"p8", slot:"pet", name:"Panda", icon:"🐼", cost:380},
   {id:"p5", slot:"pet", name:"Dragon", icon:"🐉", cost:480},
   {id:"p9", slot:"pet", pack:"idol", name:"Tiger cub", icon:"🐯", cost:260},
@@ -130,6 +147,8 @@ const ITEMS = [
   {id:"t5", slot:"theme", name:"Space adventure", icon:"🚀", cost:560, bg:"linear-gradient(160deg,#cdbbff,#9fb4ff 60%,#ffd1f0)", deco:["🚀","🪐","⭐","🌙","👽","☄️"]}
 ];
 const item = id => ITEMS.find(i=>i.id===id);
+/* boy/girl-only items: it.for = "boy" | "girl" (no field = for everyone) */
+function itemFits(it, av){ return !it.for || it.for === (av && av.style==="boy" ? "boy" : "girl"); }
 
 function lighter(hex, amt=40){
   const n = parseInt(hex.slice(1),16);
@@ -159,7 +178,8 @@ const ITEM_ART = {
   k_blade:()=>`<path d="M152 238 L152 130" stroke="#27e0ff" stroke-width="12" stroke-linecap="round" opacity=".3"/><path d="M152 232 L152 134" stroke="#bff8ff" stroke-width="6" stroke-linecap="round"/><path d="M152 134 L146 124 L152 112 L158 124Z" fill="#fff"/><rect x="140" y="226" width="24" height="7" rx="3" fill="#7a3cff"/><rect x="148" y="233" width="8" height="16" rx="3" fill="#2b2d42"/>`
 };
 function avatarSVG(p, size=190, mood="happy", opts){
-  const a = Object.assign({}, AV_DEFAULT, p.avatar), eq = p.equipped || {};
+  const a = Object.assign({}, AV_DEFAULT, p.avatar), eq0 = p.equipped || {}, eq = {};
+  for(const k in eq0){ const it0 = item(eq0[k]); if(!it0 || itemFits(it0, a)) eq[k] = eq0[k]; }
   const bg = item(eq.bg || "bg0") || item("bg0");
   const small = size < 80 && !(opts && opts.vb);
   const vb = (opts && opts.vb) || (small ? [52,30,116,124] : [0,0,220,320]);
@@ -173,6 +193,8 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(cs==="o_astro"){ top="#f1f3f5"; bot="#f1f3f5"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#adb5bd"; }
   if(cs==="o_idol"){ top="#5b2bb0"; bot="#1b1b2f"; topStyle="long"; bottomStyle="shorts"; dress="none"; shoe="#ff2fa0"; }
   if(cs==="o_hunter"){ top="#16213e"; bot="#0f172a"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#27e0ff"; }
+  if(cs==="o_soccer"){ top="#2f9e44"; bot="#f1f3f5"; topStyle="tee"; bottomStyle="shorts"; dress="none"; shoe="#1b1b2f"; }
+  if(cs==="o_ninja"){ top="#212529"; bot="#212529"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#212529"; }
   if(fullCos) dress = "none";
   const H = Math.round(size*vb[3]/vb[2]);
   let s = `<svg class="avsvg ${size>=150?"bob":""}" viewBox="${vb.join(" ")}" width="${size}" height="${H}" style="border-radius:${small?18:28}px;max-width:100%">
@@ -254,13 +276,17 @@ function avatarSVG(p, size=190, mood="happy", opts){
   if(eq.neck==="n1") s += Array.from({length:9},(_,i)=>{ const th=Math.PI*i/8; return `<circle cx="${110-24*Math.cos(th)}" cy="${150+18*Math.sin(th)}" r="3.6" fill="#fff" stroke="#d6d6d6"/>`; }).join("");
   if(eq.neck==="k_ch") s += ITEM_ART.k_ch();
   if(eq.neck==="n5") s += ITEM_ART.n5();
+  if(eq.neck==="bn2") s += `<path d="M92 150 Q110 190 128 150" stroke="#b0bec5" stroke-width="2.2" fill="none"/><rect x="102" y="178" width="16" height="22" rx="7" fill="#cfd8dc" stroke="#78909c" stroke-width="1.5"/><circle cx="110" cy="184" r="2" fill="#78909c"/>`;
   if(eq.neck==="n4") s += `<path d="M90 150 Q110 184 130 150" stroke="#ffd43b" stroke-width="2" fill="none"/>${T(110,184,20,"💖")}`;
   s += `<g transform="translate(110 150) scale(1.22) translate(-110 -150)"><ellipse cx="110" cy="148" rx="26" ry="8" fill="#000" opacity=".1"/><circle cx="64" cy="108" r="9" fill="${skin}"/><circle cx="64" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="156" cy="108" r="9" fill="${skin}"/><circle cx="156" cy="108" r="4.5" fill="#ff8fa3" opacity=".35"/><circle cx="110" cy="100" r="46" fill="url(#${gid}s)"/><ellipse cx="94" cy="72" rx="16" ry="7" fill="#fff" opacity=".14"/>`;
   // hair front
   const cap = `<path d="M62 100 Q60 50 110 48 Q160 50 158 100 Q140 74 110 76 Q80 74 62 100Z" fill="url(#${gid}h)"/>`;
-  if(["short","bob","long","wavy","dollwave","quiff","bun","spacebuns","afro","pigtails","ponytail","braid","puffs"].includes(a.hair)) s += cap + `<path d="M76 70 Q94 56 120 58" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".28"/>`;
+  if(["short","bob","long","wavy","dollwave","quiff","spiky","sidepart","bun","spacebuns","afro","pigtails","ponytail","braid","puffs"].includes(a.hair)) s += cap + `<path d="M76 70 Q94 56 120 58" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".28"/>`;
   if(a.hair==="dollwave") s += `<path d="M62 100 Q68 60 110 54 Q154 60 158 100 Q146 78 128 74 Q104 100 62 100Z" fill="url(#${gid}h)"/><path d="M60 98 Q44 150 60 204 Q76 164 70 112Z" fill="url(#${gid}h)"/><path d="M160 98 Q176 150 160 204 Q144 164 150 112Z" fill="url(#${gid}h)"/><path d="M52 150 Q60 120 66 108" stroke="#fff" stroke-width="3" fill="none" opacity=".2" stroke-linecap="round"/>`;
   if(a.hair==="quiff") s += `<path d="M60 102 Q54 60 74 48 Q60 30 92 22 Q130 12 154 40 Q172 62 160 102 Q152 80 138 72 Q104 70 84 78 Q68 86 60 102Z" fill="url(#${gid}h)"/><path d="M62 74 Q36 54 58 30 Q80 8 126 20 Q96 22 86 40Z" fill="url(#${gid}h)"/><path d="M84 40 Q112 22 144 36" stroke="#fff" stroke-width="5" fill="none" opacity=".25" stroke-linecap="round"/><path d="M60 96 Q58 84 64 76 L72 100Z" fill="#000" opacity=".25"/><path d="M160 96 Q162 84 156 76 L148 100Z" fill="#000" opacity=".25"/>`;
+  if(a.hair==="spiky") s += `<path d="M62 86 L54 48 L76 68 L84 30 L99 62 L110 22 L121 62 L136 30 L144 68 L166 48 L158 86Z" fill="url(#${gid}h)"/>`;
+  if(a.hair==="sidepart") s += `<path d="M60 102 Q56 52 104 46 Q154 46 160 102 Q150 78 126 72 Q92 74 72 64 Q64 80 60 102Z" fill="url(#${gid}h)"/><path d="M96 48 Q92 62 70 70" stroke="#000" stroke-width="2" fill="none" opacity=".25"/>`;
+  if(a.hair==="buzz") s += `<path d="M64 96 Q64 56 110 54 Q156 56 156 96 Q140 74 110 74 Q80 74 64 96Z" fill="url(#${gid}h)" opacity=".8"/>`;
   if(a.hair==="bun") s += `<circle cx="110" cy="40" r="20" fill="url(#${gid}h)"/>`;
   if(a.hair==="spacebuns") s += `<circle cx="72" cy="56" r="18" fill="url(#${gid}h)"/><circle cx="148" cy="56" r="18" fill="url(#${gid}h)"/>`;
   if(a.hair==="puffs") s += `<circle cx="68" cy="58" r="22" fill="url(#${gid}h)"/><circle cx="152" cy="58" r="22" fill="url(#${gid}h)"/>`;
