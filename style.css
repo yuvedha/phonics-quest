@@ -88,3 +88,6 @@ body.paused *{animation-play-state:paused !important}
 .modal-bg{position:fixed;inset:0;background:rgba(40,20,80,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
 .modal{max-width:420px;width:100%;margin:0}
 input.pin{font-family:inherit;font-size:28px;text-align:center;width:80%;max-width:300px;padding:10px;margin:6px 0;border:3px solid #d2b8ff;border-radius:16px}
+
+.thumb{display:flex;justify-content:center;align-items:center;min-height:96px}
+.thumb svg{max-width:92px;height:auto;border-radius:16px;animation:none!important}

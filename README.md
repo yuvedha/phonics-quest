@@ -43,3 +43,6 @@ When you add a new file, also add it to `index.html` and to `FILES` in `sw.js`, 
 - **Parent gate**: a grown-up maths question before anything that opens a web page outside the game (`openExternal` in `js/helpers.js`).
 - `privacy.html` is the privacy policy (linked from the Grown-up corner, needed for the App Store). Cloud sync users can delete their online account from the Grown-up corner.
 - **Pet colour**: pets in the avatar shop can be tinted (`PET_COLORS` in `js/avatar-data.js`).
+
+## Avatar
+New players choose Girl or Boy first; each starts from a reference-inspired look (`STYLE_PRESETS`). Hair, top and trousers use gradients for a glossy finish, and the shop shows each item on a starter avatar (`itemThumb`). The Idol & Hunter pack is original artwork (no film characters, logos or brand marks).
