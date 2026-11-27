@@ -104,10 +104,18 @@ function showGrownUp(){
     <h3>Backup</h3><p style="font-size:18px">Last backup: <b>${p.lastBackup||"never"}</b>. The home screen reminds you each week.</p><h3>Sound checking</h3><p style="font-size:18px">Currently: <b>${p.micMode==="mic"?"microphone listens":"grown-up taps “She said it”"}</b>. Change it in Chapter 2 → All levels.</p>
     <div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
     <input type="file" id="file" accept=".json" style="display:none">
-    <button class="small alt" id="del">Delete this player</button>
+    <h3>Players on this device</h3><div class="row" style="justify-content:flex-start">${DB.profiles.map(x=>`<div class="card" style="margin:4px;padding:8px 12px;display:flex;align-items:center;gap:8px">${avatarSVG(x,44)}<b>${esc(x.name)}</b><button class="small alt" data-rm="${x.id}">🗑 Remove</button></div>`).join("")}</div>
     <h3>Security and privacy</h3><div class="row"><button class="small ghost" id="chpin">🔑 Change grown-up PIN</button><button class="small ghost" id="priv">🔒 Privacy policy</button></div></div>`, ()=>{
       $("#rep").onclick = reportScreen;
-      $("#del").onclick = ()=>askConfirm("Delete "+p.name+" and all their progress on this device?", "Delete", ()=>{ DB.profiles = DB.profiles.filter(x=>x.id!==p.id); DB.current = null; saveDB(); profilesScreen(); });
+      $$("[data-rm]").forEach(b=>b.onclick=()=>{
+        const x = DB.profiles.find(y=>y.id===b.dataset.rm); if(!x) return;
+        askConfirm("Remove "+x.name+" and all their progress? This can't be undone (save a backup first if unsure).", "Remove", ()=>{
+          DB.profiles = DB.profiles.filter(y=>y.id!==x.id); DB.removed = (DB.removed||[]).concat(x.id);
+          if(DB.current===x.id) DB.current = null;
+          saveDB();
+          if(DB.current) showGrownUp(); else profilesScreen();
+        });
+      });
       $("#chpin").onclick = ()=>setPinDialog("Change grown-up PIN", showGrownUp);
       $("#priv").onclick = ()=>openExternal(new URL("privacy.html", location.href).href);
       const cd = $("#cloudDel"); if(cd) cd.onclick = ()=>askConfirm("Delete your cloud account and everything saved online? Progress on this device stays.", "Delete account", async()=>{ const r = await Cloud.deleteAll(); if(!r.ok){ CS.msg = r.error; } else { CS.msg = ""; } showGrownUp(); });

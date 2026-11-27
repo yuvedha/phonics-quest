@@ -49,3 +49,6 @@ New players choose Girl or Boy first; each starts from a reference-inspired look
 
 ### Boy and girl items
 Items may have `for:"boy"|"girl"`; `itemFits()` filters the shop and the avatar. Hair styles are listed per style (`BOY_HAIRS`, `GIRL_HAIRS`, `hairsFor`). Choosing Boy or Girl in the Look tab applies that style's starter look.
+
+### Top bar and removing players
+Every screen with the top bar has Switch and Grown-ups buttons on the right. Players are removed in Grown-up corner → Players on this device. Removed ids are kept in `DB.removed` so cloud sync does not bring a removed player back.

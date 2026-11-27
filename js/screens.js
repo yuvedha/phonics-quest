@@ -110,11 +110,10 @@ function home(){
       <div class="row">${SUBJECTS.map(sj=>{ const act = sj.chs.filter(c=>activeChs(p).includes(c)), dn = act.filter(c=>d.chapters.includes(c)).length;
         return `<button class="subj ${dn&&dn===act.length?"alldone":""}" data-subj="${sj.id}"><span class="si">${sj.icon}</span><span class="sn">${sj.name}</span><span class="ss">${dn} of ${act.length} done today ${dn===act.length&&act.length?"✅":""}</span></button>`; }).join("")}</div>
     </div>
-    <div class="row"><button class="small ghost" id="switch">👥 Switch player</button><button class="small ghost" id="grown">👩‍👧 Grown-up corner</button></div>
+    
   `, ()=>{
     $("#closet").onclick = $("#av").onclick = closet;
     $$("[data-subj]").forEach(b=>b.onclick=()=>subjectScreen(b.dataset.subj));
-    $("#switch").onclick = profilesScreen; $("#grown").onclick = grownUp;
     const fo = $("#fsOn"); if(fo) fo.onclick = async()=>{ await fsAllow(); home(); };
     const bk = $("#bk"); if(bk) bk.onclick = ()=>{ askPin("Save a backup", ()=>{ downloadBackup(); home(); }); };
     const bl = $("#bklater"); if(bl) bl.onclick = ()=>{ p.snoozeUntil = addDaysStr(2); saveDB(); home(); };

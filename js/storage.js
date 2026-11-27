@@ -84,7 +84,14 @@ async function fsRestore(){
 var CS = {timer:null, last:0, busy:false, msg:""};
 function mergeDB(r){
   if(!r || !r.profiles) return false; let changed = false;
+  /* players removed on any device stay removed everywhere */
+  const gone = new Set((DB.removed||[]).concat(r.removed||[]));
+  DB.removed = [...gone];
+  const before = DB.profiles.length;
+  DB.profiles = DB.profiles.filter(x=>!gone.has(x.id));
+  if(DB.profiles.length!==before){ changed = true; if(DB.current && !DB.profiles.some(x=>x.id===DB.current)) DB.current = null; }
   r.profiles.forEach(rp=>{
+    if(gone.has(rp.id)) return;
     const lp = DB.profiles.find(x=>x.id===rp.id);
     if(!lp){ ensure(rp); DB.profiles.push(rp); changed = true; }
     else if((rp.upd||0) > (lp.upd||0)){ ensure(rp); Object.assign(lp, rp); changed = true; }

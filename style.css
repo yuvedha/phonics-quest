@@ -91,3 +91,5 @@ input.pin{font-family:inherit;font-size:28px;text-align:center;width:80%;max-wid
 
 .thumb{display:flex;justify-content:center;align-items:center;min-height:96px}
 .thumb svg{max-width:92px;height:auto;border-radius:16px;animation:none!important}
+
+@media(max-width:560px){.top .lbl{display:none}.top .small{padding:6px 9px}}

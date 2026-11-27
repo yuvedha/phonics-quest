@@ -93,9 +93,11 @@ function view(inner, bind, opts={}){
     <div class="top">
       <div class="row" style="gap:6px;margin:0"><button class="small alt" id="homeBtn">🏠 Home</button>${backTo?`<button class="small" id="backBtn">⬅ Back</button>`:""}</div>
       <div class="row" style="font-size:18px;gap:8px"><span id="topAv">${avatarSVG(p,46,moodNow)}</span> <b>${esc(p.name)}</b></div>
-      <div class="pts" id="pts">⭐ ${p.points}</div>
+      <div class="row" style="gap:6px;margin:0"><div class="pts" id="pts">⭐ ${p.points}</div><button class="small ghost" id="topSwitch" title="Switch player">👥<span class="lbl"> Switch</span></button><button class="small ghost" id="topGrown" title="Grown-up corner">👩‍👧<span class="lbl"> Grown-ups</span></button></div>
     </div>` : "";
   app.innerHTML = top + inner;
+  const ts = $("#topSwitch"); if(ts) ts.onclick = ()=>{ backTo = null; profilesScreen(); };
+  const tg = $("#topGrown"); if(tg) tg.onclick = ()=>{ grownUp(); };
   const hb = $("#homeBtn"); if(hb) hb.onclick = ()=>{ backTo = null; home(); };
   const bb = $("#backBtn"); if(bb) bb.onclick = ()=>{ const f = backTo; backTo = null; if(f) f(); };
   if(bind) bind();
