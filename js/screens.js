@@ -5,9 +5,10 @@ function profilesScreen(){
   DB.current = null; applyTheme();
   view(`<div class="card"><h1>🌈 Little Explorers Quest</h1><p style="font-size:22px">Who is playing?</p>
     <div class="row">${DB.profiles.map(p=>`<button class="ghost" data-id="${p.id}" style="padding:10px">${avatarSVG(p,100)}<div>${esc(p.name)}</div></button>`).join("")}</div>
-    <button class="ok" id="newP">➕ New player</button></div>`, ()=>{
+    <button class="ok" id="newP">➕ New player</button> <button class="small ghost" id="gAll">👩‍👧 Grown-up corner</button></div>`, ()=>{
       $$("[data-id]").forEach(b=>b.onclick=()=>{ DB.current = b.dataset.id; saveDB(); applyTheme(); home(); });
       $("#newP").onclick = ()=>createProfile();
+      $("#gAll").onclick = ()=>askPin("Grown-up corner", grownUpAll);
     }, {bare:true});
 }
 const optRow = (label,key,arr,cur) => `<div style="margin:8px 0"><b>${label}</b><div class="row">${arr.map(([k,n])=>`<button class="opt ${cur===k?"on":"ghost"}" data-sel="${key}" data-val="${k}">${n}</button>`).join("")}</div></div>`;

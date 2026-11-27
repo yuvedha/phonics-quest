@@ -89,6 +89,43 @@ function reportScreen(){
     <div class="row noprint"><button class="small ghost" id="rprint">🖨️ Print or save as PDF</button><button class="small" id="rback">⬅ Back to Grown-up corner</button></div>
   </div>`, ()=>{ $("#rback").onclick = showGrownUp; $("#rprint").onclick = ()=>window.print(); });
 }
+function bindRestore(){
+  $("#imp").onclick = ()=>$("#file").click();
+  $("#file").onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{ try{ const d = JSON.parse(r.result); if(!d.profiles) throw 0; d.profiles.forEach(ensure); DB = d; saveDB(); alert("Backup restored!"); profilesScreen(); }catch(err){ alert("That file doesn't look like a Little Explorers Quest backup."); } };
+    r.readAsText(f);
+  };
+}
+function removeButtons(after){
+  $$("[data-rm]").forEach(b=>b.onclick=()=>{
+    const x = DB.profiles.find(y=>y.id===b.dataset.rm); if(!x) return;
+    askConfirm("Remove "+x.name+" and all their progress? This can't be undone (save a backup first if unsure).", "Remove", ()=>{
+      DB.profiles = DB.profiles.filter(y=>y.id!==x.id); DB.removed = (DB.removed||[]).concat(x.id);
+      if(DB.current===x.id) DB.current = null;
+      saveDB(); after();
+    });
+  });
+}
+/* Grown-up corner opened from the "Who is playing?" screen (no player chosen yet) */
+function grownUpAll(){
+  view(`<div class="card" style="text-align:left"><h2>👩‍👧 Grown-up corner</h2>
+    <h3>Players on this device</h3>
+    <div class="row" style="justify-content:flex-start">${DB.profiles.map(x=>`<div class="card" style="margin:4px;padding:8px 12px;display:flex;align-items:center;gap:8px">${avatarSVG(x,44)}<b>${esc(x.name)}</b><button class="small" data-open="${x.id}">📊 Open</button><button class="small alt" data-rm="${x.id}">🗑 Remove</button></div>`).join("") || "<p>No players yet.</p>"}</div>
+    <h3>Backup</h3><div class="row"><button class="small" id="exp">💾 Save a backup file</button><button class="small ghost" id="imp">📂 Restore from backup</button></div>
+    <input type="file" id="file" accept=".json" style="display:none">
+    <h3>Security and privacy</h3><div class="row"><button class="small ghost" id="chpin">🔑 Change grown-up PIN</button><button class="small ghost" id="priv">🔒 Privacy policy</button></div>
+    <div class="row"><button class="small" id="gback">⬅ Back</button></div></div>`, ()=>{
+    $$("[data-open]").forEach(b=>b.onclick=()=>{ DB.current = b.dataset.open; saveDB(); applyTheme(); showGrownUp(); });
+    removeButtons(grownUpAll);
+    $("#exp").onclick = ()=>{ downloadBackup(); grownUpAll(); };
+    $("#chpin").onclick = ()=>setPinDialog("Change grown-up PIN", grownUpAll);
+    $("#priv").onclick = ()=>openExternal(new URL("privacy.html", location.href).href);
+    $("#gback").onclick = profilesScreen;
+    bindRestore();
+  }, {bare:true});
+}
 function showGrownUp(){
   const p = P();
   const rows = Object.entries(p.stats).map(([k,v])=>({k, ...v})).filter(r=>r.miss>0).sort((a,b)=>b.miss-a.miss);
@@ -107,15 +144,7 @@ function showGrownUp(){
     <h3>Players on this device</h3><div class="row" style="justify-content:flex-start">${DB.profiles.map(x=>`<div class="card" style="margin:4px;padding:8px 12px;display:flex;align-items:center;gap:8px">${avatarSVG(x,44)}<b>${esc(x.name)}</b><button class="small alt" data-rm="${x.id}">🗑 Remove</button></div>`).join("")}</div>
     <h3>Security and privacy</h3><div class="row"><button class="small ghost" id="chpin">🔑 Change grown-up PIN</button><button class="small ghost" id="priv">🔒 Privacy policy</button></div></div>`, ()=>{
       $("#rep").onclick = reportScreen;
-      $$("[data-rm]").forEach(b=>b.onclick=()=>{
-        const x = DB.profiles.find(y=>y.id===b.dataset.rm); if(!x) return;
-        askConfirm("Remove "+x.name+" and all their progress? This can't be undone (save a backup first if unsure).", "Remove", ()=>{
-          DB.profiles = DB.profiles.filter(y=>y.id!==x.id); DB.removed = (DB.removed||[]).concat(x.id);
-          if(DB.current===x.id) DB.current = null;
-          saveDB();
-          if(DB.current) showGrownUp(); else profilesScreen();
-        });
-      });
+      removeButtons(()=>{ if(DB.current) showGrownUp(); else profilesScreen(); });
       $("#chpin").onclick = ()=>setPinDialog("Change grown-up PIN", showGrownUp);
       $("#priv").onclick = ()=>openExternal(new URL("privacy.html", location.href).href);
       const cd = $("#cloudDel"); if(cd) cd.onclick = ()=>askConfirm("Delete your cloud account and everything saved online? Progress on this device stays.", "Delete account", async()=>{ const r = await Cloud.deleteAll(); if(!r.ok){ CS.msg = r.error; } else { CS.msg = ""; } showGrownUp(); });
@@ -126,13 +155,7 @@ function showGrownUp(){
       const co = $("#cloudOut"); if(co) co.onclick = async()=>{ await Cloud.signOut(); showGrownUp(); };
       const fp = $("#fsPick"); if(fp) fp.onclick = async()=>{ await fsPick(); showGrownUp(); };
       const f2 = $("#fsOn2"); if(f2) f2.onclick = async()=>{ await fsAllow(); showGrownUp(); };
-      $("#imp").onclick = ()=>$("#file").click();
-      $("#file").onchange = e=>{
-        const f = e.target.files[0]; if(!f) return;
-        const r = new FileReader();
-        r.onload = ()=>{ try{ const d = JSON.parse(r.result); if(!d.profiles) throw 0; d.profiles.forEach(ensure); DB = d; saveDB(); alert("Backup restored!"); profilesScreen(); }catch(err){ alert("That file doesn't look like a Little Explorers Quest backup."); } };
-        r.readAsText(f);
-      };
+      bindRestore();
     });
 }
 
