@@ -138,7 +138,7 @@ function closet(){
   const p = P();
   const tabs = CLOSET_TABS.map(([k,n])=>`<button class="opt ${closetTab===k?"on":"ghost"}" data-tab="${k}">${n}</button>`).join("");
   let body = "";
-  if(closetTab==="look") body += `<div class="card" style="text-align:left">${lookEditor(p.avatar)}</div>`;
+  if(closetTab==="look") body += `<div class="card" style="text-align:left"><div style="margin:8px 0"><b>My name</b><div class="row"><input id="rn" maxlength="14" value="${esc(p.name)}" style="font-size:22px;padding:8px 12px;border-radius:14px;border:2px solid #cbb8ff;width:60%;max-width:260px"><button class="small ok" id="rnSave">Save</button></div></div>${lookEditor(p.avatar)}</div>`;
   if(closetTab==="clothes") body += `<div class="card" style="text-align:left"><h3 style="text-align:center">My clothes</h3>${p.equipped.costume?`<p style="text-align:center;font-size:16px">A glam outfit is on. Take it off in "Glam outfits" below to show these clothes.</p>`:""}${clothesEditor(p.avatar)}</div>`;
   if(closetTab==="fun" && p.equipped.pet) body += `<div class="card" style="text-align:left"><h3 style="text-align:center">Pet colour</h3>${swRow("Choose a colour for your pet","petColor",PET_SWATCH,p.avatar.petColor|0)}</div>`;
   if(closetTab==="idol"){ body += `<div class="card"><h3>⭐ Idol &amp; Hunter</h3><p style="font-size:16px;margin:4px">Stage looks, glowing gear and a tiger cub for a star-and-spirit-hunter adventure!</p></div>`; IDOL_SLOTS.forEach(slot=>{ if(ITEMS.some(i=>i.slot===slot&&i.pack==="idol"&&itemFits(i,p.avatar))) body += `<div class="card"><h3>${SLOTS[slot]}</h3>${shopGrid(slot,"idol")}</div>`; }); }
@@ -149,6 +149,7 @@ function closet(){
     $$("[data-tab]").forEach(b=>b.onclick=()=>{ closetTab = b.dataset.tab; keep(closet); });
     $("#done").onclick = home;
     bindBasics(p.avatar, ()=>{ saveDB(); keep(closet); });
+    if($("#rnSave")) $("#rnSave").onclick = ()=>{ const v = $("#rn").value.trim().slice(0,14); if(!v){ $("#rn").focus(); return; } p.name = v; saveDB(); sndWin(); keep(closet); };
     $$("[data-buy]").forEach(b=>b.onclick=()=>{
       const it = item(b.dataset.buy);
       if(p.points>=it.cost){ p.points-=it.cost; p.owned.push(it.id); p.equipped[it.slot]=it.id; saveDB(); sndWin(); confetti(16); applyTheme(); keep(closet); }
