@@ -17,9 +17,10 @@ function lookEditor(av){
        + optRow("Eyes","eyes",EYES,av.eyes) + swRow("Eye colour","eyeColor",EYEC,av.eyeColor) + optRow("Smile","mouth",MOUTHS,av.mouth);
 }
 function clothesEditor(av){
-  const d = av.dress==="none";
-  return optRow("Dress or separates?","dress",DRESSES,av.dress)
-    + (d ? optRow("Top","topStyle",TOPS,av.topStyle) + optRow("Bottoms","bottomStyle",BOTTOMS,av.bottomStyle) : "")
+  const boy = av.style==="boy", d = boy || av.dress==="none";
+  const tops = boy ? TOPS.filter(([k])=>k!=="crochet") : TOPS, bots = boy ? BOTTOMS.filter(([k])=>!["skirt","leggings"].includes(k)) : BOTTOMS;
+  return (boy ? "" : optRow("Dress or separates?","dress",DRESSES,av.dress))
+    + (d ? optRow("Top","topStyle",tops,av.topStyle) + optRow("Bottoms","bottomStyle",bots,av.bottomStyle) : "")
     + swRow(d?"Top colour":"Dress colour","top",TOPC,av.top)
     + ((d||av.dress==="tutu"||av.dress==="party") ? swRow(d?"Bottoms colour":(av.dress==="tutu"?"Tutu colour":"Belt colour"),"bottom",BOTC,av.bottom) : "")
     + swRow("Shoes","shoes",SHOEC,av.shoes);

@@ -187,6 +187,7 @@ function avatarSVG(p, size=190, mood="happy", opts){
   const eyeC = EYEC[a.eyeColor] || EYEC[0], skin = SKIN[a.skin] || SKIN[1], hc = HAIRC[a.hairColor] || HAIRC[1];
   let top = TOPC[a.top] || TOPC[1], bot = BOTC[a.bottom] || BOTC[0], shoe = SHOEC[a.shoes] || SHOEC[0];
   let topStyle = a.topStyle, bottomStyle = a.bottomStyle, dress = a.dress;
+  if(a.style==="boy"){ dress = "none"; if(topStyle==="crochet") topStyle = "tee"; if(bottomStyle==="skirt"||bottomStyle==="leggings") bottomStyle = "shorts"; }
   const girl = a.style!=="boy";
   const cs = eq.costume, fullCos = ["o_gown","o_disco","o_mermaid"].includes(cs);
   if(cs==="o_hero"){ top="#e03131"; bot="#1c7ed6"; topStyle="long"; bottomStyle="pants"; dress="none"; shoe="#2b2d42"; }
