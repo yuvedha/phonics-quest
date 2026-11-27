@@ -29,24 +29,27 @@ const CONTS = {
     [[-180,-72],[-150,-77],[-120,-73],[-90,-72],[-65,-68],[-62,-64],[-58,-64],[-60,-70],[-45,-78],[-20,-72],[10,-70],[40,-68],[70,-68],[100,-66],[130,-66],[160,-70],[180,-72],[180,-90],[-180,-90]]]}
 };
 const CONT_IDS = ["na","sa","eu","af","as","oc","an"];
+const _REFC = {na:"#ffc800",sa:"#33cc33",eu:"#ff5555",af:"#990000",as:"#9900cc",oc:"#ffee44",an:"#0099ff"};
+const _CSQ = {na:"🟧",sa:"🟩",eu:"🟥",af:"🟫",as:"🟪",oc:"🟨",an:"🟦"};
 const _CCOL = {na:"#f4a261",sa:"#90be6d",eu:"#8d99ae",af:"#e9c46a",as:"#e76f8a",oc:"#7ec8e3",an:"#e8eef5"};
 
 /* mode: "alone" crops to the continent; "world" shows the whole map with the target coloured; "blank" is a plain grey world with the target dark; "crop" crops with all continents coloured gently (for country dots) */
 function _geoSvg(target, mode, dot){
-  const poly = (id,fill,stroke)=>CONTS[id].polys.map(pl=>`<polygon points="${pl.map(p=>p[0]+","+(-p[1])).join(" ")}" fill="${fill}" stroke="${stroke}" stroke-width="${mode==="world"||mode==="blank"?0.6:0.4}" stroke-linejoin="round"/>`).join("");
+  const poly = (id,fill,stroke,sw)=>CONTS[id].polys.map(pl=>`<polygon points="${pl.map(p=>p[0]+","+(-p[1])).join(" ")}" fill="${fill}" stroke="${stroke}" stroke-width="${sw||(mode==="world"||mode==="blank"?0.6:0.4)}" stroke-linejoin="round"/>`).join("");
   let vb, body = "";
-  if(mode==="world"||mode==="blank"){ vb = [-180,-90,360,180]; }
+  if(mode==="world"||mode==="blank"||mode==="colour"){ vb = [-180,-90,360,180]; }
   else { const c = CONTS[target].crop; vb = [c[0], -c[3], c[2]-c[0], c[3]-c[1]]; }
-  const ocean = `<rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]}" fill="#dff3ff"/>`;
-  CONT_IDS.forEach(id=>{
-    if(mode==="alone"){ if(id===target) body += poly(id,"#7bc96f","#2f6b2a"); }
+  const ocean = `<rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]}" fill="${mode==="colour"?"#cdeeff":"#dff3ff"}"/>`;
+  CONT_IDS.slice().sort((a,b)=>(a===target)-(b===target)).forEach(id=>{
+    if(mode==="colour") body += poly(id, _REFC[id], id===target?"#000":"#2b3a8f", id===target?2.2:0.7);
+    else if(mode==="alone"){ if(id===target) body += poly(id,"#7bc96f","#2f6b2a"); }
     else if(mode==="world") body += poly(id, id===target?"#ff9f1c":"#c9d6c5", "#fff");
     else if(mode==="blank") body += poly(id, id===target?"#6b5b95":"#d9d9d9", "#fff");
     else body += poly(id, id===target?"#bfe3a8":"#ececec", "#fff");
   });
   const r = vb[2]/60;
   if(dot) body += `<circle cx="${dot[0]}" cy="${-dot[1]}" r="${r*1.5}" fill="#e63946" stroke="#fff" stroke-width="${r*0.35}"/>`;
-  return `<div class="mvis"><svg viewBox="${vb.join(" ")}" style="width:100%;max-width:${mode==="world"||mode==="blank"?560:380}px;height:auto;border-radius:14px;border:3px solid #7fc4e8">${ocean}${body}</svg></div>`;
+  return `<div class="mvis"><svg viewBox="${vb.join(" ")}" style="width:100%;max-width:${mode==="world"||mode==="blank"||mode==="colour"?560:380}px;height:auto;border-radius:14px;border:3px solid #7fc4e8">${ocean}${body}</svg></div>`;
 }
 const _uq = (text,id)=>text+`<span style="display:none">${id}</span>`;
 
@@ -113,8 +116,9 @@ const _contName = id => CONTS[id].name;
 
 const GEO_GEN = {
   cshape: (mode)=>{ const id = _draw("cshape:"+mode, CONT_IDS.slice()); const ans = _contName(id);
-    const q = mode==="alone" ? "Which continent has this shape?" : mode==="world" ? "Which continent is coloured orange?" : "Which continent is the dark purple one?";
-    return {q:_uq(q,id), say:q.replace(/<[^>]+>/g,""), vis:_geoSvg(id,mode), type:"mc", ans, opts:_opts(ans,_sh(CONT_IDS.filter(x=>x!==id).map(_contName)).slice(0,3)), why:`That is ${ans}.`, key:"shape:"+mode}; },
+    const q = mode==="colour" ? "Which continent has the thick black outline?" : mode==="alone" ? "Which continent has this shape?" : mode==="world" ? "Which continent is coloured orange?" : "Which continent is the dark purple one?";
+    const lab = x => mode==="colour" ? _CSQ[x]+" "+_contName(x) : _contName(x);
+    return {q:_uq(q,id), say:q.replace(/<[^>]+>/g,""), vis:_geoSvg(id,mode), type:"mc", ans:lab(id), opts:_opts(lab(id),_sh(CONT_IDS.filter(x=>x!==id)).slice(0,3).map(lab)), why:`That is ${ans}.`, key:"shape:"+mode}; },
   cfact: ()=>{ const f=_draw("contfacts",CONT_FACTS); const ans=f[1]; const wr=_sh(CONT_IDS.map(_contName).filter(x=>x!==ans)).slice(0,3); return {q:f[0], say:f[0], type:"mc", ans, opts:_opts(ans,wr), why:`The answer is ${ans}.`, key:"cfact"}; },
   ocean: ()=>{ const f=_draw("oceanfacts",OCEAN_FACTS); return {q:f[0], say:f[0], type:"mc", ans:f[1], opts:_sh([f[1],...f[2]]), why:`The answer is ${f[1]}.`, key:"ocean"}; },
   dot: (ct)=>{ const list=_inCont(ct), c=_draw("dot:"+ct, list.slice()); const wr=_sh(list.filter(x=>x.id!==c.id)).slice(0,3).map(x=>x.name);
@@ -136,6 +140,7 @@ const GEO_GEN = {
     const bi = _draw("country:"+id, builders.map((_,i)=>i)); const q = builders[bi](); q.type="mc"; q.key = c.name; return q; }
 };
 const GEO_LEVELS = [
+  {name:"Meet the continents (coloured world map)", n:7, gens:[["cshape","colour"]]},
   {name:"Continent shapes: who am I?", n:7, gens:[["cshape","alone"]]},
   {name:"Find the continent on the world map", n:7, gens:[["cshape","world"]]},
   {name:"Blank world map quiz", n:7, gens:[["cshape","blank"]]},
